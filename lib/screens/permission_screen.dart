@@ -35,8 +35,9 @@ class _PermissionScreenState extends State<PermissionScreen>
   Future<void> _checkPermission() async {
     final granted = await NotificationService.isPermissionGranted();
     if (!mounted) return;
+    if (granted && !_granted) NotificationService.start();
+    if (!granted && _granted) NotificationService.stop();
     setState(() => _granted = granted);
-    if (granted) NotificationService.start();
   }
 
   @override
