@@ -43,6 +43,9 @@ class DatabaseService {
         const WhatsAppMessagesCompanion(isConvertedToTodo: Value(true)),
       );
 
+  Future<void> deleteMessage(int id) =>
+      (_db.delete(_db.whatsAppMessages)..where((t) => t.id.equals(id))).go();
+
   Stream<List<WhatsAppMessage>> watchMessages() =>
       (_db.select(_db.whatsAppMessages)
             ..orderBy([(t) => OrderingTerm.desc(t.timestamp)]))

@@ -35,10 +35,23 @@ class _MessageItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: CircleAvatar(
-        child: Text(message.sender[0].toUpperCase()),
+    return Dismissible(
+      key: ValueKey(message.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        color: Theme.of(context).colorScheme.errorContainer,
+        child: Icon(
+          Icons.delete_outline,
+          color: Theme.of(context).colorScheme.onErrorContainer,
+        ),
       ),
+      onDismissed: (_) => DatabaseService.instance.deleteMessage(message.id),
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Text(message.sender[0].toUpperCase()),
+        ),
       title: Row(
         children: [
           Expanded(
@@ -69,6 +82,7 @@ class _MessageItem extends StatelessWidget {
         context: context,
         useSafeArea: true,
         builder: (_) => _MessageDetailSheet(message: message),
+      ),
       ),
     );
   }
