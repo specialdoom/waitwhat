@@ -11,6 +11,8 @@ class NotificationService {
 
   static StreamSubscription<ServiceNotificationEvent>? _subscription;
 
+  static bool isRunning = false;
+
   static Future<bool> isPermissionGranted() =>
       NotificationListenerService.isPermissionGranted();
 
@@ -23,11 +25,13 @@ class NotificationService {
         .where((e) => _whatsAppPackages.contains(e.packageName))
         .where((e) => e.hasRemoved != true)
         .listen(_onWhatsAppNotification);
+    isRunning = true;
   }
 
   static void stop() {
     _subscription?.cancel();
     _subscription = null;
+    isRunning = false;
   }
 
   static Future<void> _onWhatsAppNotification(

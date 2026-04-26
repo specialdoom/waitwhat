@@ -11,12 +11,14 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen>
     with WidgetsBindingObserver {
   bool _permissionGranted = false;
+  bool _listening = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkPermission();
+    _listening = NotificationService.isRunning;
   }
 
   @override
@@ -32,7 +34,21 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   Future<void> _checkPermission() async {
     final granted = await NotificationService.isPermissionGranted();
-    if (mounted) setState(() => _permissionGranted = granted);
+    if (mounted) {
+      setState(() {
+        _permissionGranted = granted;
+        if (!granted) _listening = false;
+      });
+    }
+  }
+
+  void _toggleListening(bool value) {
+    if (value) {
+      NotificationService.start();
+    } else {
+      NotificationService.stop();
+    }
+    setState(() => _listening = value);
   }
 
   @override
@@ -60,6 +76,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                     child: const Text('Grant'),
                   ),
           ),
+          if (_permissionGranted)
+            SwitchListTile(
+              secondary: Icon(
+                _listening ? Icons.hearing : Icons.hearing_disabled,
+                color: _listening
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.outline,
+              ),
+              title: const Text('Listen for Messages'),
+              subtitle: Text(
+                _listening ? 'Capturing WhatsApp messages' : 'Paused',
+              ),
+              value: _listening,
+              onChanged: _permissionGranted ? _toggleListening : null,
+            ),
         ],
       ),
     );
