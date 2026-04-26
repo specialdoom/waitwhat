@@ -1,76 +1,100 @@
-import 'package:isar/isar.dart';
-import 'package:isar_flutter_libs/isar_flutter_libs.dart';
-import 'package:path_provider/path_provider.dart';
-import '../models/whatsapp_message.dart';
-import '../models/todo.dart';
+import 'package:drift/drift.dart';
+import '../database/app_database.dart';
 
 class DatabaseService {
   static DatabaseService? _instance;
   static DatabaseService get instance => _instance!;
 
-  late Isar _isar;
+  final AppDatabase _db;
 
-  DatabaseService._();
+  DatabaseService._(this._db);
 
-  static Future<void> initialize() async {
+  static void initialize() {
     if (_instance != null) return;
-    _instance = DatabaseService._();
-    await _instance!._open();
-  }
-
-  Future<void> _open() async {
-    final dir = await getApplicationDocumentsDirectory();
-    _isar = await Isar.open(
-      [WhatsAppMessageSchema, TodoSchema],
-      directory: dir.path,
-    );
+    _instance = DatabaseService._(AppDatabase());
   }
 
   // ── Messages ──────────────────────────────────────────────────────────────
 
-  Future<int> saveMessage(WhatsAppMessage message) =>
-      _isar.writeTxn(() => _isar.whatsAppMessages.put(message));
+  Future<int> saveMessage({
+    required String sender,
+    required String body,
+    required DateTime timestamp,
+  }) =>
+      _db.into(_db.whatsAppMessages).insert(
+            WhatsAppMessagesCompanion.insert(
+              sender: sender,
+              body: body,
+              timestamp: timestamp,
+            ),
+          );
 
   Future<List<WhatsAppMessage>> getAllMessages() =>
-      _isar.whatsAppMessages.where().sortByTimestampDesc().findAll();
+      (_db.select(_db.whatsAppMessages)
+            ..orderBy([(t) => OrderingTerm.desc(t.timestamp)]))
+          .get();
 
   Future<WhatsAppMessage?> getMessageById(int id) =>
-      _isar.whatsAppMessages.get(id);
+      (_db.select(_db.whatsAppMessages)..where((t) => t.id.equals(id)))
+          .getSingleOrNull();
 
-  Future<void> markMessageConverted(int id) => _isar.writeTxn(() async {
-        final msg = await _isar.whatsAppMessages.get(id);
-        if (msg == null) return;
-        msg.isConvertedToTodo = true;
-        await _isar.whatsAppMessages.put(msg);
-      });
+  Future<void> markMessageConverted(int id) =>
+      (_db.update(_db.whatsAppMessages)..where((t) => t.id.equals(id))).write(
+        const WhatsAppMessagesCompanion(isConvertedToTodo: Value(true)),
+      );
 
   Stream<List<WhatsAppMessage>> watchMessages() =>
-      _isar.whatsAppMessages.where().watch(fireImmediately: true);
+      (_db.select(_db.whatsAppMessages)
+            ..orderBy([(t) => OrderingTerm.desc(t.timestamp)]))
+          .watch();
 
   // ── Todos ─────────────────────────────────────────────────────────────────
 
-  Future<int> saveTodo(Todo todo) =>
-      _isar.writeTxn(() => _isar.todos.put(todo));
+  Future<int> saveTodo({
+    required String title,
+    String? notes,
+    DateTime? dueDate,
+    Priority priority = Priority.medium,
+    int? sourceMessageId,
+  }) =>
+      _db.into(_db.todos).insert(
+            TodosCompanion.insert(
+              title: title,
+              notes: Value(notes),
+              dueDate: Value(dueDate),
+              priority: priority,
+              sourceMessageId: Value(sourceMessageId),
+              createdAt: DateTime.now(),
+            ),
+          );
+
+  Future<void> updateTodo(int id, TodosCompanion data) =>
+      (_db.update(_db.todos)..where((t) => t.id.equals(id))).write(data);
 
   Future<List<Todo>> getAllTodos() =>
-      _isar.todos.where().sortByCreatedAtDesc().findAll();
+      (_db.select(_db.todos)
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .get();
 
-  Future<List<Todo>> getPendingTodos() => _isar.todos
-      .filter()
-      .isCompletedEqualTo(false)
-      .sortByDueDate()
-      .findAll();
+  Future<List<Todo>> getPendingTodos() =>
+      (_db.select(_db.todos)
+            ..where((t) => t.isCompleted.equals(false))
+            ..orderBy([(t) => OrderingTerm.asc(t.dueDate)]))
+          .get();
 
-  Future<void> toggleTodoCompleted(int id) => _isar.writeTxn(() async {
-        final todo = await _isar.todos.get(id);
-        if (todo == null) return;
-        todo.isCompleted = !todo.isCompleted;
-        await _isar.todos.put(todo);
-      });
+  Future<void> toggleTodoCompleted(int id) async {
+    final todo = await (_db.select(_db.todos)..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    if (todo == null) return;
+    await (_db.update(_db.todos)..where((t) => t.id.equals(id)))
+        .write(TodosCompanion(isCompleted: Value(!todo.isCompleted)));
+  }
 
   Future<void> deleteTodo(int id) =>
-      _isar.writeTxn(() => _isar.todos.delete(id));
+      (_db.delete(_db.todos)..where((t) => t.id.equals(id))).go();
 
   Stream<List<Todo>> watchTodos() =>
-      _isar.todos.where().watch(fireImmediately: true);
+      (_db.select(_db.todos)
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .watch();
 }

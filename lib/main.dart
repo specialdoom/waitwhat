@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'screens/permission_screen.dart';
 import 'services/database_service.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseService.initialize();
+  DatabaseService.initialize();
   runApp(const MainApp());
 }
 
@@ -12,10 +13,12 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('WaitWhat'),
+    return MaterialApp(
+      home: PermissionScreen(
+        child: const Scaffold(
+          body: Center(
+            child: Text('WaitWhat'),
+          ),
         ),
       ),
     );
