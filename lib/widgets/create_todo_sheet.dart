@@ -37,10 +37,14 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
   DateTime? _dueDate;
   late Priority _priority;
   bool _aiLoading = false;
+  bool _quotaExhausted = false;
 
   @override
   void initState() {
     super.initState();
+    SettingsService.isGeminiQuotaExhausted().then((v) {
+      if (mounted) setState(() => _quotaExhausted = v);
+    });
     final existing = widget.existingTodo;
     final msg = widget.sourceMessage;
     _titleController = TextEditingController(
@@ -61,6 +65,7 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
   }
 
   Future<void> _suggestWithAi() async {
+    if (_quotaExhausted) return;
     final apiKey = await SettingsService.getGeminiApiKey();
     if (!mounted) return;
     if (apiKey == null) {
@@ -70,25 +75,55 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
       return;
     }
     setState(() => _aiLoading = true);
-    final suggestion = await AiService.suggestTodo(
-      sender: widget.sourceMessage!.sender,
-      body: widget.sourceMessage!.body,
-      apiKey: apiKey,
-    );
-    if (!mounted) return;
-    setState(() => _aiLoading = false);
-    if (suggestion == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not extract a todo from this message')),
+    try {
+      final suggestion = await AiService.suggestTodo(
+        sender: widget.sourceMessage!.sender,
+        body: widget.sourceMessage!.body,
+        apiKey: apiKey,
+      );
+      if (!mounted) return;
+      setState(() => _aiLoading = false);
+      if (suggestion == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Could not extract a todo from this message')),
+        );
+        return;
+      }
+      setState(() {
+        _titleController.text = suggestion.title;
+        if (suggestion.notes != null) _notesController.text = suggestion.notes!;
+        if (suggestion.dueDate != null) _dueDate = suggestion.dueDate;
+        _priority = suggestion.priority;
+      });
+      return;
+    } on AiQuotaExceededException {
+      if (!mounted) return;
+      setState(() {
+        _aiLoading = false;
+        _quotaExhausted = true;
+      });
+      await SettingsService.setGeminiQuotaExhausted();
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          icon: const Icon(Icons.warning_amber_rounded),
+          title: const Text('Quota Exceeded'),
+          content: const Text(
+            'Your Gemini free tier quota has been exhausted. '
+            'Visit Google AI Studio to check your usage or upgrade your plan.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
       return;
     }
-    setState(() {
-      _titleController.text = suggestion.title;
-      if (suggestion.notes != null) _notesController.text = suggestion.notes!;
-      if (suggestion.dueDate != null) _dueDate = suggestion.dueDate;
-      _priority = suggestion.priority;
-    });
   }
 
   Future<void> _pickDate() async {
@@ -179,7 +214,7 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: OutlinedButton.icon(
-                onPressed: _aiLoading ? null : _suggestWithAi,
+                onPressed: (_aiLoading || _quotaExhausted) ? null : _suggestWithAi,
                 icon: _aiLoading
                     ? const SizedBox(
                         width: 16,
@@ -187,7 +222,13 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.auto_awesome, size: 18),
-                label: Text(_aiLoading ? 'Analyzing…' : 'Suggest with AI'),
+                label: Text(
+                  _aiLoading
+                      ? 'Analyzing…'
+                      : _quotaExhausted
+                          ? 'Quota exhausted'
+                          : 'Suggest with AI',
+                ),
               ),
             ),
           TextField(

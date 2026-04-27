@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../database/app_database.dart';
 
+class AiQuotaExceededException implements Exception {}
+
 class AiSuggestion {
   final String title;
   final String? notes;
@@ -78,7 +80,13 @@ $body
         dueDate: dueDate,
         priority: priority,
       );
-    } catch (_) {
+    } catch (e) {
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('resource_exhausted') ||
+          msg.contains('429') ||
+          msg.contains('quota')) {
+        throw AiQuotaExceededException();
+      }
       return null;
     }
   }

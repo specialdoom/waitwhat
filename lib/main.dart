@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/permission_screen.dart';
 import 'services/database_service.dart';
+import 'services/settings_service.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   DatabaseService.initialize();
+  await SettingsService.loadQuotaState();
   runApp(const MainApp());
 }
 

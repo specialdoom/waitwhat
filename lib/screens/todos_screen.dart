@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../database/app_database.dart';
 import '../services/database_service.dart';
+import '../services/settings_service.dart';
 import '../widgets/create_todo_sheet.dart';
+import 'settings_screen.dart';
 
 class TodosScreen extends StatelessWidget {
   const TodosScreen({super.key});
@@ -14,7 +16,33 @@ class TodosScreen extends StatelessWidget {
         onPressed: () => showCreateTodoSheet(context),
         child: const Icon(Icons.add),
       ),
-      body: StreamBuilder<List<Todo>>(
+      body: Column(
+        children: [
+          ListenableBuilder(
+            listenable: SettingsService.quotaExhaustedNotifier,
+            builder: (context, _) {
+              if (!SettingsService.quotaExhaustedNotifier.value) {
+                return const SizedBox.shrink();
+              }
+              return MaterialBanner(
+                padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                leading: const Icon(Icons.warning_amber_rounded),
+                content: const Text(
+                  'Gemini quota exhausted. Update your API key in Settings to re-enable AI suggestions.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    ),
+                    child: const Text('Settings'),
+                  ),
+                ],
+              );
+            },
+          ),
+          Expanded(
+            child: StreamBuilder<List<Todo>>(
         stream: DatabaseService.instance.watchTodos(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -34,6 +62,9 @@ class TodosScreen extends StatelessWidget {
             ],
           );
         },
+      ),
+          ),
+        ],
       ),
     );
   }
