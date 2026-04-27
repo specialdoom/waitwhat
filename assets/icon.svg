@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432">
+  <defs>
+    <clipPath id="squircle-b2">
+      <path d="M216 0 C 360 0, 432 72, 432 216 C 432 360, 360 432, 216 432 C 72 432, 0 360, 0 216 C 0 72, 72 0, 216 0 Z"></path>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#squircle-b2)">
+    <rect width="432" height="432" fill="#C8F25A"></rect>
+    <g transform="translate(94 122) rotate(-4)">
+      <rect width="244" height="36" rx="18" fill="#0F3D2E"></rect>
+    </g>
+    <g transform="translate(82 192) rotate(2)">
+      <rect width="208" height="36" rx="18" fill="#0F3D2E"></rect>
+    </g>
+    <g transform="translate(94 262)">
+      <rect width="170" height="36" rx="18" fill="#0F3D2E"></rect>
+    </g>
+    <circle cx="338" cy="280" r="14" fill="#0F3D2E"></circle>
+  </g>
+</svg>
