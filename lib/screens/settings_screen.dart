@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../services/ai_service.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
 import '../services/settings_service.dart';
+import '../widgets/app_notification.dart';
 import 'sender_filter_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -15,7 +17,10 @@ class _SettingsScreenState extends State<SettingsScreen>
     with WidgetsBindingObserver {
   bool _permissionGranted = false;
   bool _listening = false;
+  bool _checkingQuota = false;
   final _apiKeyController = TextEditingController();
+  final _instructionsController = TextEditingController();
+  NotificationData? _notification;
 
   @override
   void initState() {
@@ -24,27 +29,39 @@ class _SettingsScreenState extends State<SettingsScreen>
     _checkPermission();
     _listening = NotificationService.isRunning;
     _loadApiKey();
+    _loadInstructions();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _apiKeyController.dispose();
+    _instructionsController.dispose();
     super.dispose();
   }
 
+  Future<void> _loadInstructions() async {
+    final v = await SettingsService.getCustomInstructions();
+    if (mounted && v != null) _instructionsController.text = v;
+  }
+
+  void _showNotification(String message, NotificationType type) {
+    setState(() => _notification = NotificationData(message, type));
+  }
+
+  Future<void> _saveInstructions() async {
+    await SettingsService.saveCustomInstructions(_instructionsController.text);
+    if (mounted) _showNotification('Instructions saved', NotificationType.success);
+  }
+
   Future<void> _loadApiKey() async {
-    final key = await SettingsService.getGeminiApiKey();
+    final key = await SettingsService.getGroqApiKey();
     if (mounted && key != null) _apiKeyController.text = key;
   }
 
   Future<void> _saveApiKey() async {
-    await SettingsService.saveGeminiApiKey(_apiKeyController.text);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('API key saved')),
-      );
-    }
+    await SettingsService.saveGroqApiKey(_apiKeyController.text);
+    if (mounted) _showNotification('API key saved', NotificationType.success);
   }
 
   @override
@@ -59,6 +76,22 @@ class _SettingsScreenState extends State<SettingsScreen>
         _permissionGranted = granted;
         if (!granted) _listening = false;
       });
+    }
+  }
+
+  Future<void> _recheckQuota() async {
+    final apiKey = await SettingsService.getGroqApiKey();
+    if (!mounted) return;
+    if (apiKey == null) return;
+    setState(() => _checkingQuota = true);
+    final ok = await AiService.checkQuota(apiKey: apiKey);
+    if (!mounted) return;
+    setState(() => _checkingQuota = false);
+    if (ok) {
+      await SettingsService.clearGroqQuotaExhausted();
+      if (mounted) _showNotification('Quota available — AI suggestions re-enabled', NotificationType.success);
+    } else {
+      if (mounted) _showNotification('Quota still exhausted', NotificationType.error);
     }
   }
 
@@ -112,6 +145,14 @@ class _SettingsScreenState extends State<SettingsScreen>
               onChanged: _permissionGranted ? _toggleListening : null,
             ),
           _SectionHeader('AI'),
+          if (_notification != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: AppNotification(
+                data: _notification!,
+                onClose: () => setState(() => _notification = null),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Row(
@@ -122,8 +163,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                     controller: _apiKeyController,
                     obscureText: true,
                     decoration: const InputDecoration(
-                      labelText: 'Gemini API Key',
-                      hintText: 'AIza...',
+                      labelText: 'Groq API Key',
+                      hintText: 'gsk_...',
                       border: OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _saveApiKey(),
@@ -132,6 +173,45 @@ class _SettingsScreenState extends State<SettingsScreen>
                 const SizedBox(width: 8),
                 IconButton.filled(
                   onPressed: _saveApiKey,
+                  icon: const Icon(Icons.check),
+                  tooltip: 'Save',
+                ),
+                const SizedBox(width: 8),
+                IconButton.filledTonal(
+                  onPressed: _checkingQuota ? null : _recheckQuota,
+                  icon: _checkingQuota
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.network_check),
+                  tooltip: 'Test connection',
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _instructionsController,
+                    maxLines: 3,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Custom instructions',
+                      hintText: 'e.g. Messages about payments are always high priority',
+                      border: OutlineInputBorder(),
+                      alignLabelWithHint: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  onPressed: _saveInstructions,
                   icon: const Icon(Icons.check),
                   tooltip: 'Save',
                 ),
@@ -147,7 +227,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 leading: const Icon(Icons.contacts_outlined),
                 title: const Text('Monitored Contacts'),
                 subtitle: Text(
-                  count == 0 ? 'All messages captured' : '$count contact${count == 1 ? '' : 's'}',
+                  count == 0 ? 'No contacts — messages not captured' : '$count contact${count == 1 ? '' : 's'}',
                 ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.push(

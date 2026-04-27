@@ -4,13 +4,13 @@ import '../database/app_database.dart';
 import '../services/ai_service.dart';
 import '../services/database_service.dart';
 import '../services/settings_service.dart';
+import 'app_notification.dart';
 
 void showCreateTodoSheet(
   BuildContext context, {
   WhatsAppMessage? sourceMessage,
   Todo? existingTodo,
 }) {
-  final messenger = ScaffoldMessenger.of(context);
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -18,7 +18,6 @@ void showCreateTodoSheet(
     builder: (_) => _CreateTodoSheet(
       sourceMessage: sourceMessage,
       existingTodo: existingTodo,
-      messenger: messenger,
     ),
   );
 }
@@ -26,13 +25,8 @@ void showCreateTodoSheet(
 class _CreateTodoSheet extends StatefulWidget {
   final WhatsAppMessage? sourceMessage;
   final Todo? existingTodo;
-  final ScaffoldMessengerState messenger;
 
-  const _CreateTodoSheet({
-    this.sourceMessage,
-    this.existingTodo,
-    required this.messenger,
-  });
+  const _CreateTodoSheet({this.sourceMessage, this.existingTodo});
 
   @override
   State<_CreateTodoSheet> createState() => _CreateTodoSheetState();
@@ -45,11 +39,12 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
   late Priority _priority;
   bool _aiLoading = false;
   bool _quotaExhausted = false;
+  NotificationData? _notification;
 
   @override
   void initState() {
     super.initState();
-    SettingsService.isGeminiQuotaExhausted().then((v) {
+    SettingsService.isGroqQuotaExhausted().then((v) {
       if (mounted) setState(() => _quotaExhausted = v);
     });
     final existing = widget.existingTodo;
@@ -71,30 +66,34 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
     super.dispose();
   }
 
+  void _showNotification(String message, NotificationType type) {
+    setState(() => _notification = NotificationData(message, type));
+  }
+
   Future<void> _suggestWithAi() async {
     if (_quotaExhausted) return;
-    final apiKey = await SettingsService.getGeminiApiKey();
+    final apiKey = await SettingsService.getGroqApiKey();
     if (!mounted) return;
     if (apiKey == null) {
-      widget.messenger.showSnackBar(
-        const SnackBar(content: Text('Set your Gemini API key in Settings first')),
-      );
+      _showNotification('Set your Groq API key in Settings first', NotificationType.error);
       return;
     }
-    setState(() => _aiLoading = true);
+    setState(() {
+      _aiLoading = true;
+      _notification = null;
+    });
     try {
+      final customInstructions = await SettingsService.getCustomInstructions();
       final suggestion = await AiService.suggestTodo(
         sender: widget.sourceMessage!.sender,
         body: widget.sourceMessage!.body,
         apiKey: apiKey,
+        customInstructions: customInstructions,
       );
       if (!mounted) return;
       setState(() => _aiLoading = false);
       if (suggestion == null) {
-        widget.messenger.showSnackBar(
-          const SnackBar(
-              content: Text('Could not extract a todo from this message')),
-        );
+        _showNotification("This message doesn't seem to need a todo", NotificationType.info);
         return;
       }
       setState(() {
@@ -103,33 +102,19 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
         if (suggestion.dueDate != null) _dueDate = suggestion.dueDate;
         _priority = suggestion.priority;
       });
-      return;
     } on AiQuotaExceededException {
       if (!mounted) return;
       setState(() {
         _aiLoading = false;
         _quotaExhausted = true;
       });
-      await SettingsService.setGeminiQuotaExhausted();
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          icon: const Icon(Icons.warning_amber_rounded),
-          title: const Text('Quota Exceeded'),
-          content: const Text(
-            'Your Gemini free tier quota has been exhausted. '
-            'Visit Google AI Studio to check your usage or upgrade your plan.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-      return;
+      await SettingsService.setGroqQuotaExhausted();
+      if (mounted) {
+        _showNotification(
+          'Groq quota exhausted. Update your API key in Settings.',
+          NotificationType.error,
+        );
+      }
     }
   }
 
@@ -216,7 +201,12 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          if (_notification != null)
+            AppNotification(
+              data: _notification!,
+              onClose: () => setState(() => _notification = null),
+            ),
           if (widget.sourceMessage != null && !isEditing)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),

@@ -23,7 +23,8 @@ class TodosScreen extends StatelessWidget {
             stream: DatabaseService.instance.watchSenders(),
             builder: (context, snapshot) {
               final senders = snapshot.data;
-              if (senders == null || senders.isNotEmpty) return const SizedBox.shrink();
+              if (senders == null || senders.isNotEmpty)
+                return const SizedBox.shrink();
               return MaterialBanner(
                 padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
                 leading: const Icon(Icons.contacts_outlined),
@@ -33,7 +34,9 @@ class TodosScreen extends StatelessWidget {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SenderFilterScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const SenderFilterScreen(),
+                      ),
                     ),
                     child: const Text('Add contacts'),
                   ),
@@ -66,26 +69,27 @@ class TodosScreen extends StatelessWidget {
           ),
           Expanded(
             child: StreamBuilder<List<Todo>>(
-        stream: DatabaseService.instance.watchTodos(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final todos = snapshot.data!;
-          if (todos.isEmpty) return const _EmptyState();
+              stream: DatabaseService.instance.watchTodos(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final todos = snapshot.data!;
+                if (todos.isEmpty) return const _EmptyState();
 
-          final groups = _groupTodos(todos);
-          return ListView(
-            children: [
-              for (final entry in groups.entries) ...[
-                _SectionHeader(title: entry.key),
-                for (final todo in entry.value) _TodoItem(todo: todo),
-              ],
-              const SizedBox(height: 80),
-            ],
-          );
-        },
-      ),
+                final groups = _groupTodos(todos);
+
+                return ListView(
+                  children: [
+                    for (final entry in groups.entries) ...[
+                      _SectionHeader(title: entry.key),
+                      for (final todo in entry.value) _TodoItem(todo: todo),
+                    ],
+                    const SizedBox(height: 80),
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -99,21 +103,24 @@ class TodosScreen extends StatelessWidget {
     final pending = todos.where((t) => !t.isCompleted).toList();
     final done = todos.where((t) => t.isCompleted).toList();
 
-    final todayList = pending
-        .where((t) =>
-            t.dueDate != null &&
-            !t.dueDate!.isBefore(today) &&
-            t.dueDate!.isBefore(tomorrow))
-        .toList()
-      ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
+    final todayList =
+        pending
+            .where(
+              (t) =>
+                  t.dueDate != null &&
+                  !t.dueDate!.isBefore(today) &&
+                  t.dueDate!.isBefore(tomorrow),
+            )
+            .toList()
+          ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
 
-    final upcomingList = pending
-        .where((t) => t.dueDate != null && !t.dueDate!.isBefore(tomorrow))
-        .toList()
-      ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
+    final upcomingList =
+        pending
+            .where((t) => t.dueDate != null && t.dueDate!.isBefore(tomorrow))
+            .toList()
+          ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
 
-    final noDueDateList =
-        pending.where((t) => t.dueDate == null).toList();
+    final noDueDateList = pending.where((t) => t.dueDate == null).toList();
 
     return {
       if (todayList.isNotEmpty) 'Today': todayList,
@@ -135,8 +142,8 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }
@@ -191,8 +198,12 @@ class _TodoItem extends StatelessWidget {
               Text(
                 _formatDate(todo.dueDate!),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: _dueDateColor(context, todo.dueDate!, todo.isCompleted),
-                    ),
+                  color: _dueDateColor(
+                    context,
+                    todo.dueDate!,
+                    todo.isCompleted,
+                  ),
+                ),
               ),
             const SizedBox(width: 8),
             Container(
@@ -211,17 +222,20 @@ class _TodoItem extends StatelessWidget {
   }
 
   Color _priorityColor(Priority priority) => switch (priority) {
-        Priority.low => Colors.green,
-        Priority.medium => Colors.orange,
-        Priority.high => Colors.red,
-      };
+    Priority.low => Colors.green,
+    Priority.medium => Colors.orange,
+    Priority.high => Colors.red,
+  };
 
   Color _dueDateColor(BuildContext context, DateTime dueDate, bool completed) {
     if (completed) return Theme.of(context).colorScheme.outline;
     final now = DateTime.now();
     if (dueDate.isBefore(now)) return Theme.of(context).colorScheme.error;
-    final tomorrow =
-        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    final tomorrow = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).add(const Duration(days: 1));
     if (dueDate.isBefore(tomorrow)) return Colors.orange;
     return Theme.of(context).colorScheme.outline;
   }
@@ -229,14 +243,27 @@ class _TodoItem extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final diff =
-        DateTime(date.year, date.month, date.day).difference(today).inDays;
+    final diff = DateTime(
+      date.year,
+      date.month,
+      date.day,
+    ).difference(today).inDays;
     if (diff == 0) return 'Today';
     if (diff == 1) return 'Tomorrow';
     if (diff == -1) return 'Yesterday';
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}';
   }
@@ -257,14 +284,13 @@ class _EmptyState extends StatelessWidget {
             color: Theme.of(context).colorScheme.outline,
           ),
           const SizedBox(height: 16),
-          Text('No todos yet',
-              style: Theme.of(context).textTheme.titleMedium),
+          Text('No todos yet', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(
             'Tap + to create one',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
         ],
       ),
