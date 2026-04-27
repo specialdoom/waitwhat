@@ -23,8 +23,9 @@ class TodosScreen extends StatelessWidget {
             stream: DatabaseService.instance.watchSenders(),
             builder: (context, snapshot) {
               final senders = snapshot.data;
-              if (senders == null || senders.isNotEmpty)
+              if (senders == null || senders.isNotEmpty) {
                 return const SizedBox.shrink();
+              }
               return MaterialBanner(
                 padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
                 leading: const Icon(Icons.contacts_outlined),
@@ -116,7 +117,7 @@ class TodosScreen extends StatelessWidget {
 
     final upcomingList =
         pending
-            .where((t) => t.dueDate != null && t.dueDate!.isBefore(tomorrow))
+            .where((t) => t.dueDate != null && !t.dueDate!.isBefore(tomorrow))
             .toList()
           ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
 

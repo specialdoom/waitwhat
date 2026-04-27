@@ -30,13 +30,13 @@ class AiService {
 Today's date is $today.
 Analyze this WhatsApp message and extract a single actionable todo item.
 Messages are most often written in Romanian — detect the language of the message and respond with the title and notes in that same language.
-Always include the sender "$sender" in the title (e.g. "Sună-l pe $sender", "Răspunde-i lui $sender", or the English equivalent if the message is in English).
+Title should be onlythe sender "$sender".
 Use today's date as reference when interpreting relative dates like "mâine", "săptămâna viitoare", "tomorrow", or "next week".${_customInstructionsBlock(customInstructions)}
 First decide if the message requires any action at all. Greetings, acknowledgements, casual chat, and messages with no actionable request do NOT need a todo.
 Respond with ONLY a valid JSON object:
 {
   "needsTodo": true or false,
-  "title": "brief action title including the sender name, or null if needsTodo is false",
+  "title": "the sender name",
   "notes": "additional context or null",
   "dueDate": "YYYY-MM-DD if a date is mentioned, otherwise null",
   "priority": "low, medium, or high based on urgency, or null if needsTodo is false"
