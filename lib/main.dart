@@ -3,11 +3,13 @@ import 'screens/home_screen.dart';
 import 'screens/permission_screen.dart';
 import 'services/database_service.dart';
 import 'services/settings_service.dart';
+import 'services/widget_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   DatabaseService.initialize();
   await SettingsService.loadQuotaState();
+  DatabaseService.instance.watchTodos().listen((_) => WidgetService.update());
   runApp(const MainApp());
 }
 

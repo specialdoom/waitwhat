@@ -13,6 +13,10 @@ class NotificationService {
 
   static bool isRunning = false;
 
+  // Tracks recently seen (sender, body) keys to deduplicate WhatsApp's
+  // duplicate notification events for the same message.
+  static final _recentKeys = <String, DateTime>{};
+
   static Future<bool> isPermissionGranted() =>
       NotificationListenerService.isPermissionGranted();
 
@@ -41,13 +45,22 @@ class NotificationService {
     if (body == null || body.trim().isEmpty) return;
 
     final sender = event.title ?? 'Unknown';
+    final trimmedBody = body.trim();
+    final now = DateTime.now();
+    final key = '$sender\x00$trimmedBody';
+
+    final last = _recentKeys[key];
+    if (last != null && now.difference(last).inSeconds < 2) return;
+    _recentKeys[key] = now;
+    _recentKeys.removeWhere((_, t) => now.difference(t).inSeconds > 10);
+
     final allowedSenders = await DatabaseService.instance.getAllSenders();
     if (!allowedSenders.any((s) => s.name == sender)) return;
 
     await DatabaseService.instance.saveMessage(
       sender: sender,
-      body: body.trim(),
-      timestamp: DateTime.now(),
+      body: trimmedBody,
+      timestamp: now,
     );
   }
 }
