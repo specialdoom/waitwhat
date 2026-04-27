@@ -1,7 +1,9 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import '../database/app_database.dart';
+import '../services/ai_service.dart';
 import '../services/database_service.dart';
+import '../services/settings_service.dart';
 
 void showCreateTodoSheet(
   BuildContext context, {
@@ -34,6 +36,7 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
   late final TextEditingController _notesController;
   DateTime? _dueDate;
   late Priority _priority;
+  bool _aiLoading = false;
 
   @override
   void initState() {
@@ -55,6 +58,37 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
     _titleController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _suggestWithAi() async {
+    final apiKey = await SettingsService.getGeminiApiKey();
+    if (!mounted) return;
+    if (apiKey == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Set your Gemini API key in Settings first')),
+      );
+      return;
+    }
+    setState(() => _aiLoading = true);
+    final suggestion = await AiService.suggestTodo(
+      sender: widget.sourceMessage!.sender,
+      body: widget.sourceMessage!.body,
+      apiKey: apiKey,
+    );
+    if (!mounted) return;
+    setState(() => _aiLoading = false);
+    if (suggestion == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not extract a todo from this message')),
+      );
+      return;
+    }
+    setState(() {
+      _titleController.text = suggestion.title;
+      if (suggestion.notes != null) _notesController.text = suggestion.notes!;
+      if (suggestion.dueDate != null) _dueDate = suggestion.dueDate;
+      _priority = suggestion.priority;
+    });
   }
 
   Future<void> _pickDate() async {
@@ -141,6 +175,21 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
             ],
           ),
           const SizedBox(height: 16),
+          if (widget.sourceMessage != null && !isEditing)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: OutlinedButton.icon(
+                onPressed: _aiLoading ? null : _suggestWithAi,
+                icon: _aiLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.auto_awesome, size: 18),
+                label: Text(_aiLoading ? 'Analyzing…' : 'Suggest with AI'),
+              ),
+            ),
           TextField(
             controller: _titleController,
             autofocus: true,

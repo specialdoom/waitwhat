@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
+import '../services/settings_service.dart';
 import 'sender_filter_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     with WidgetsBindingObserver {
   bool _permissionGranted = false;
   bool _listening = false;
+  final _apiKeyController = TextEditingController();
 
   @override
   void initState() {
@@ -21,12 +23,28 @@ class _SettingsScreenState extends State<SettingsScreen>
     WidgetsBinding.instance.addObserver(this);
     _checkPermission();
     _listening = NotificationService.isRunning;
+    _loadApiKey();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _apiKeyController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadApiKey() async {
+    final key = await SettingsService.getGeminiApiKey();
+    if (mounted && key != null) _apiKeyController.text = key;
+  }
+
+  Future<void> _saveApiKey() async {
+    await SettingsService.saveGeminiApiKey(_apiKeyController.text);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('API key saved')),
+      );
+    }
   }
 
   @override
@@ -93,6 +111,33 @@ class _SettingsScreenState extends State<SettingsScreen>
               value: _listening,
               onChanged: _permissionGranted ? _toggleListening : null,
             ),
+          _SectionHeader('AI'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _apiKeyController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Gemini API Key',
+                      hintText: 'AIza...',
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => _saveApiKey(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  onPressed: _saveApiKey,
+                  icon: const Icon(Icons.check),
+                  tooltip: 'Save',
+                ),
+              ],
+            ),
+          ),
           _SectionHeader('Filters'),
           StreamBuilder<List>(
             stream: DatabaseService.instance.watchSenders(),
