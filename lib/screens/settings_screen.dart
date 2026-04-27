@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/database_service.dart';
 import '../services/notification_service.dart';
+import 'sender_filter_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -91,6 +93,27 @@ class _SettingsScreenState extends State<SettingsScreen>
               value: _listening,
               onChanged: _permissionGranted ? _toggleListening : null,
             ),
+          _SectionHeader('Filters'),
+          StreamBuilder<List>(
+            stream: DatabaseService.instance.watchSenders(),
+            builder: (context, snapshot) {
+              final count = snapshot.data?.length ?? 0;
+              return ListTile(
+                leading: const Icon(Icons.contacts_outlined),
+                title: const Text('Monitored Contacts'),
+                subtitle: Text(
+                  count == 0 ? 'All messages captured' : '$count contact${count == 1 ? '' : 's'}',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SenderFilterScreen(),
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

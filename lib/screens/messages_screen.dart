@@ -20,7 +20,7 @@ class MessagesScreen extends StatelessWidget {
           if (messages.isEmpty) return const _EmptyState();
           return ListView.separated(
             itemCount: messages.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (_, i) => _MessageItem(message: messages[i]),
           );
         },

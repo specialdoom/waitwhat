@@ -100,4 +100,29 @@ class DatabaseService {
       (_db.select(_db.todos)
             ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
           .watch();
+
+  // ── Filtered Senders ──────────────────────────────────────────────────────
+
+  Future<void> addSender(String name) => _db
+      .into(_db.filteredSenders)
+      .insertOnConflictUpdate(FilteredSendersCompanion.insert(name: name));
+
+  Future<void> removeSender(int id) =>
+      (_db.delete(_db.filteredSenders)..where((t) => t.id.equals(id))).go();
+
+  Future<List<FilteredSender>> getAllSenders() =>
+      _db.select(_db.filteredSenders).get();
+
+  Stream<List<FilteredSender>> watchSenders() =>
+      _db.select(_db.filteredSenders).watch();
+
+  Future<List<String>> getDistinctMessageSenders() async {
+    final rows = await (_db.selectOnly(_db.whatsAppMessages)
+          ..addColumns([_db.whatsAppMessages.sender])
+          ..groupBy([_db.whatsAppMessages.sender]))
+        .get();
+    return rows
+        .map((r) => r.read(_db.whatsAppMessages.sender)!)
+        .toList();
+  }
 }

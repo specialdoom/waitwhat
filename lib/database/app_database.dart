@@ -25,11 +25,29 @@ class Todos extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-@DriftDatabase(tables: [WhatsAppMessages, Todos])
+class FilteredSenders extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().unique()();
+}
+
+@DriftDatabase(tables: [WhatsAppMessages, Todos, FilteredSenders])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? driftDatabase(name: 'waitwhat'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.database.customStatement(
+              'CREATE TABLE IF NOT EXISTS filtered_senders '
+              '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+              'name TEXT NOT NULL UNIQUE)',
+            );
+          }
+        },
+      );
 }
