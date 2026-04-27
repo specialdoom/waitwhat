@@ -10,6 +10,7 @@ void showCreateTodoSheet(
   WhatsAppMessage? sourceMessage,
   Todo? existingTodo,
 }) {
+  final messenger = ScaffoldMessenger.of(context);
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -17,6 +18,7 @@ void showCreateTodoSheet(
     builder: (_) => _CreateTodoSheet(
       sourceMessage: sourceMessage,
       existingTodo: existingTodo,
+      messenger: messenger,
     ),
   );
 }
@@ -24,8 +26,13 @@ void showCreateTodoSheet(
 class _CreateTodoSheet extends StatefulWidget {
   final WhatsAppMessage? sourceMessage;
   final Todo? existingTodo;
+  final ScaffoldMessengerState messenger;
 
-  const _CreateTodoSheet({this.sourceMessage, this.existingTodo});
+  const _CreateTodoSheet({
+    this.sourceMessage,
+    this.existingTodo,
+    required this.messenger,
+  });
 
   @override
   State<_CreateTodoSheet> createState() => _CreateTodoSheetState();
@@ -69,7 +76,7 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
     final apiKey = await SettingsService.getGeminiApiKey();
     if (!mounted) return;
     if (apiKey == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      widget.messenger.showSnackBar(
         const SnackBar(content: Text('Set your Gemini API key in Settings first')),
       );
       return;
@@ -84,7 +91,7 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
       if (!mounted) return;
       setState(() => _aiLoading = false);
       if (suggestion == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        widget.messenger.showSnackBar(
           const SnackBar(
               content: Text('Could not extract a todo from this message')),
         );
@@ -185,7 +192,7 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.existingTodo != null;
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
         16,
         16,

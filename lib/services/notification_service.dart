@@ -42,10 +42,7 @@ class NotificationService {
 
     final sender = event.title ?? 'Unknown';
     final allowedSenders = await DatabaseService.instance.getAllSenders();
-    if (allowedSenders.isNotEmpty &&
-        !allowedSenders.any((s) => s.name == sender)) {
-      return;
-    }
+    if (!allowedSenders.any((s) => s.name == sender)) return;
 
     await DatabaseService.instance.saveMessage(
       sender: sender,

@@ -3,6 +3,7 @@ import '../database/app_database.dart';
 import '../services/database_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/create_todo_sheet.dart';
+import 'sender_filter_screen.dart';
 import 'settings_screen.dart';
 
 class TodosScreen extends StatelessWidget {
@@ -18,6 +19,28 @@ class TodosScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
+          StreamBuilder<List<FilteredSender>>(
+            stream: DatabaseService.instance.watchSenders(),
+            builder: (context, snapshot) {
+              final senders = snapshot.data;
+              if (senders == null || senders.isNotEmpty) return const SizedBox.shrink();
+              return MaterialBanner(
+                padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                leading: const Icon(Icons.contacts_outlined),
+                content: const Text(
+                  'No monitored contacts added. Messages will not be captured until you add at least one.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SenderFilterScreen()),
+                    ),
+                    child: const Text('Add contacts'),
+                  ),
+                ],
+              );
+            },
+          ),
           ListenableBuilder(
             listenable: SettingsService.quotaExhaustedNotifier,
             builder: (context, _) {
