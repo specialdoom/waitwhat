@@ -3,26 +3,123 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:background="#FF6750A4"
-    android:padding="16dp">
+    android:background="@drawable/widget_background"
+    android:padding="12dp">
 
     <TextView
-        android:id="@+id/widget_title"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="WaitWhat"
-        android:textColor="#FFFFFFFF"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        android:text="Todos"
+        android:textSize="13sp"
+        android:textColor="#6750A4"
+        android:textStyle="bold"
+        android:paddingBottom="6dp" />
 
-    <TextView
-        android:id="@+id/widget_subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Loading…"
-        android:textColor="#CCFFFFFF"
-        android:textSize="12sp"
-        android:paddingTop="4dp" />
+    <!-- slot 0 -->
+    <LinearLayout android:id="@+id/slot_0"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingBottom="5dp" android:visibility="gone">
+        <TextView android:id="@+id/priority_0"
+            android:layout_width="4dp" android:layout_height="24dp"
+            android:layout_marginEnd="8dp" android:text="" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:id="@+id/title_0"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="12sp" android:textColor="#1C1B1F"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/due_0"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="10sp" android:textColor="#6750A4" android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- slot 1 -->
+    <LinearLayout android:id="@+id/slot_1"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingBottom="5dp" android:visibility="gone">
+        <TextView android:id="@+id/priority_1"
+            android:layout_width="4dp" android:layout_height="24dp"
+            android:layout_marginEnd="8dp" android:text="" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:id="@+id/title_1"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="12sp" android:textColor="#1C1B1F"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/due_1"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="10sp" android:textColor="#6750A4" android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- slot 2 -->
+    <LinearLayout android:id="@+id/slot_2"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingBottom="5dp" android:visibility="gone">
+        <TextView android:id="@+id/priority_2"
+            android:layout_width="4dp" android:layout_height="24dp"
+            android:layout_marginEnd="8dp" android:text="" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:id="@+id/title_2"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="12sp" android:textColor="#1C1B1F"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/due_2"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="10sp" android:textColor="#6750A4" android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- slot 3 -->
+    <LinearLayout android:id="@+id/slot_3"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingBottom="5dp" android:visibility="gone">
+        <TextView android:id="@+id/priority_3"
+            android:layout_width="4dp" android:layout_height="24dp"
+            android:layout_marginEnd="8dp" android:text="" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:id="@+id/title_3"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="12sp" android:textColor="#1C1B1F"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/due_3"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="10sp" android:textColor="#6750A4" android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- slot 4 -->
+    <LinearLayout android:id="@+id/slot_4"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingBottom="5dp" android:visibility="gone">
+        <TextView android:id="@+id/priority_4"
+            android:layout_width="4dp" android:layout_height="24dp"
+            android:layout_marginEnd="8dp" android:text="" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical">
+            <TextView android:id="@+id/title_4"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="12sp" android:textColor="#1C1B1F"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/due_4"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="10sp" android:textColor="#6750A4" android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView android:id="@+id/empty_view"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:gravity="center" android:paddingTop="8dp"
+        android:text="No pending todos"
+        android:textSize="12sp" android:textColor="#79747E"
+        android:visibility="gone" />
 
 </LinearLayout>
