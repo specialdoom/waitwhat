@@ -40,6 +40,10 @@ class NotificationService {
     isRunning = false;
   }
 
+  // Matches WhatsApp bundle summaries like "5 new messages" or
+  // "3 new messages from John" that carry no actionable content.
+  static final _summaryPattern = RegExp(r'^\d+ new messages', caseSensitive: false);
+
   static Future<void> _onWhatsAppNotification(
     ServiceNotificationEvent event,
   ) async {
@@ -48,6 +52,8 @@ class NotificationService {
 
     final sender = event.title ?? 'Unknown';
     final trimmedBody = body.trim();
+
+    if (_summaryPattern.hasMatch(trimmedBody)) return;
     final now = DateTime.now();
     final key = '$sender\x00$trimmedBody';
 
@@ -82,9 +88,13 @@ class NotificationService {
         customInstructions: customInstructions,
       );
       if (suggestion == null) return;
+      final notes = [
+        if (suggestion.notes != null) suggestion.notes!,
+        trimmedBody,
+      ].join('\n\n');
       await DatabaseService.instance.saveTodo(
         title: suggestion.title,
-        notes: suggestion.notes,
+        notes: notes,
         dueDate: suggestion.dueDate,
         priority: suggestion.priority,
         sourceMessageId: messageId,
