@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:notification_listener_service/notification_listener_service.dart';
 import 'package:notification_listener_service/notification_event.dart';
+import 'ai_service.dart';
 import 'database_service.dart';
+import 'settings_service.dart';
 
 const _settingsChannel = MethodChannel('com.example.waitwhat/settings');
 
@@ -57,10 +59,39 @@ class NotificationService {
     final allowedSenders = await DatabaseService.instance.getAllSenders();
     if (!allowedSenders.any((s) => s.name == sender)) return;
 
-    await DatabaseService.instance.saveMessage(
+    final messageId = await DatabaseService.instance.saveMessage(
       sender: sender,
       body: trimmedBody,
       timestamp: now,
     );
+
+    final autoCreate = await SettingsService.getAutoCreateTodos();
+    if (!autoCreate) return;
+    if (SettingsService.quotaExhaustedNotifier.value) return;
+
+    final apiKey = await SettingsService.getGroqApiKey();
+    if (apiKey == null) return;
+
+    final customInstructions = await SettingsService.getCustomInstructions();
+
+    try {
+      final suggestion = await AiService.suggestTodo(
+        sender: sender,
+        body: trimmedBody,
+        apiKey: apiKey,
+        customInstructions: customInstructions,
+      );
+      if (suggestion == null) return;
+      await DatabaseService.instance.saveTodo(
+        title: suggestion.title,
+        notes: suggestion.notes,
+        dueDate: suggestion.dueDate,
+        priority: suggestion.priority,
+        sourceMessageId: messageId,
+      );
+      await DatabaseService.instance.markMessageConverted(messageId);
+    } on AiQuotaExceededException {
+      await SettingsService.setGroqQuotaExhausted();
+    } catch (_) {}
   }
 }

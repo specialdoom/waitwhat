@@ -47,6 +47,18 @@ class SettingsService {
     quotaExhaustedNotifier.value = false;
   }
 
+  static const _autoCreateTodosPref = 'auto_create_todos';
+
+  static Future<bool> getAutoCreateTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_autoCreateTodosPref) ?? false;
+  }
+
+  static Future<void> setAutoCreateTodos(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_autoCreateTodosPref, value);
+  }
+
   static const _customInstructionsPref = 'custom_instructions';
 
   static Future<String?> getCustomInstructions() async {

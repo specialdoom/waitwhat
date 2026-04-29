@@ -18,6 +18,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _permissionGranted = false;
   bool _listening = false;
   bool _checkingQuota = false;
+  bool _autoCreateTodos = false;
   final _apiKeyController = TextEditingController();
   final _instructionsController = TextEditingController();
   NotificationData? _notification;
@@ -30,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     _listening = NotificationService.isRunning;
     _loadApiKey();
     _loadInstructions();
+    _loadAutoCreate();
   }
 
   @override
@@ -38,6 +40,16 @@ class _SettingsScreenState extends State<SettingsScreen>
     _apiKeyController.dispose();
     _instructionsController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAutoCreate() async {
+    final v = await SettingsService.getAutoCreateTodos();
+    if (mounted) setState(() => _autoCreateTodos = v);
+  }
+
+  Future<void> _toggleAutoCreate(bool value) async {
+    await SettingsService.setAutoCreateTodos(value);
+    if (mounted) setState(() => _autoCreateTodos = value);
   }
 
   Future<void> _loadInstructions() async {
@@ -145,6 +157,18 @@ class _SettingsScreenState extends State<SettingsScreen>
               onChanged: _permissionGranted ? _toggleListening : null,
             ),
           _SectionHeader('AI'),
+          SwitchListTile(
+            secondary: Icon(
+              Icons.auto_awesome,
+              color: _autoCreateTodos
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outline,
+            ),
+            title: const Text('Auto-create todos'),
+            subtitle: const Text('Automatically create a todo from each new message'),
+            value: _autoCreateTodos,
+            onChanged: _toggleAutoCreate,
+          ),
           if (_notification != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
