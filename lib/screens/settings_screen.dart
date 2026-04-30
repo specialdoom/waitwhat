@@ -141,14 +141,18 @@ class _SettingsScreenState extends State<SettingsScreen>
     if (!mounted) return;
     if (apiKey == null) return;
     setState(() => _checkingQuota = true);
-    final ok = await AiService.checkQuota(apiKey: apiKey);
+    final status = await AiService.checkQuota(apiKey: apiKey);
     if (!mounted) return;
     setState(() => _checkingQuota = false);
-    if (ok) {
-      await SettingsService.clearGroqQuotaExhausted();
-      if (mounted) _showNotification('Quota available — AI suggestions re-enabled', NotificationType.success);
-    } else {
-      if (mounted) _showNotification('Quota still exhausted', NotificationType.error);
+    switch (status) {
+      case QuotaStatus.ok:
+        await SettingsService.clearGroqQuotaExhausted();
+        if (mounted) _showNotification('Connected — AI suggestions enabled', NotificationType.success);
+      case QuotaStatus.exhausted:
+        await SettingsService.setGroqQuotaExhausted();
+        if (mounted) _showNotification('Quota exhausted — try again later or use a different key', NotificationType.error);
+      case QuotaStatus.error:
+        if (mounted) _showNotification('Connection failed — check your API key and internet connection', NotificationType.error);
     }
   }
 

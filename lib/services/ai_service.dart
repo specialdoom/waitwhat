@@ -4,6 +4,8 @@ import '../database/app_database.dart';
 
 class AiQuotaExceededException implements Exception {}
 
+enum QuotaStatus { ok, exhausted, error }
+
 class AiSuggestion {
   final String title;
   final String? notes;
@@ -52,7 +54,7 @@ $body
           ? '\nAdditional rules to follow:\n$instructions\n'
           : '';
 
-  static Future<bool> checkQuota({
+  static Future<QuotaStatus> checkQuota({
     required String apiKey,
     http.Client? client,
   }) async {
@@ -72,9 +74,11 @@ $body
           'max_tokens': 1,
         }),
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) return QuotaStatus.ok;
+      if (response.statusCode == 429) return QuotaStatus.exhausted;
+      return QuotaStatus.error;
     } catch (_) {
-      return false;
+      return QuotaStatus.error;
     }
   }
 

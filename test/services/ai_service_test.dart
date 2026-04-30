@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:waitwhat/database/app_database.dart';
-import 'package:waitwhat/services/ai_service.dart';
+import 'package:waitwhat/services/ai_service.dart' show AiService, AiQuotaExceededException, QuotaStatus;
 
 http.Response _groqResponse(Map<String, dynamic> payload, {int status = 200}) {
   final content = jsonEncode(payload);
@@ -177,22 +177,36 @@ void main() {
   });
 
   group('AiService.checkQuota', () {
-    test('returns true on 200', () async {
+    test('returns ok on 200', () async {
       final client = MockClient((_) async => http.Response('{}', 200));
-      expect(await AiService.checkQuota(apiKey: 'key', client: client), isTrue);
+      expect(
+        await AiService.checkQuota(apiKey: 'key', client: client),
+        QuotaStatus.ok,
+      );
     });
 
-    test('returns false on 429', () async {
+    test('returns exhausted on 429', () async {
       final client = MockClient((_) async => http.Response('', 429));
       expect(
-          await AiService.checkQuota(apiKey: 'key', client: client), isFalse);
+        await AiService.checkQuota(apiKey: 'key', client: client),
+        QuotaStatus.exhausted,
+      );
     });
 
-    test('returns false on network error', () async {
-      final client =
-          MockClient((_) async => throw Exception('network error'));
+    test('returns error on non-200 non-429', () async {
+      final client = MockClient((_) async => http.Response('', 401));
       expect(
-          await AiService.checkQuota(apiKey: 'key', client: client), isFalse);
+        await AiService.checkQuota(apiKey: 'key', client: client),
+        QuotaStatus.error,
+      );
+    });
+
+    test('returns error on network exception', () async {
+      final client = MockClient((_) async => throw Exception('network error'));
+      expect(
+        await AiService.checkQuota(apiKey: 'key', client: client),
+        QuotaStatus.error,
+      );
     });
   });
 }
