@@ -52,9 +52,13 @@ $body
           ? '\nAdditional rules to follow:\n$instructions\n'
           : '';
 
-  static Future<bool> checkQuota({required String apiKey}) async {
+  static Future<bool> checkQuota({
+    required String apiKey,
+    http.Client? client,
+  }) async {
+    final c = client ?? http.Client();
     try {
-      final response = await http.post(
+      final response = await c.post(
         Uri.parse(_endpoint),
         headers: {
           'Authorization': 'Bearer $apiKey',
@@ -79,9 +83,11 @@ $body
     required String body,
     required String apiKey,
     String? customInstructions,
+    http.Client? client,
   }) async {
+    final c = client ?? http.Client();
     try {
-      final response = await http.post(
+      final response = await c.post(
         Uri.parse(_endpoint),
         headers: {
           'Authorization': 'Bearer $apiKey',
