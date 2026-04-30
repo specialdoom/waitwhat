@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/ai_service.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
+import '../services/push_notification_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/app_notification.dart';
 import 'sender_filter_screen.dart';
@@ -20,6 +21,8 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _checkingQuota = false;
   bool _autoCreateTodos = false;
   bool _apiKeyVisible = false;
+  bool _dailyReminderEnabled = false;
+  TimeOfDay _dailyReminderTime = const TimeOfDay(hour: 9, minute: 0);
   final _apiKeyController = TextEditingController();
   final _instructionsController = TextEditingController();
   NotificationData? _notification;
@@ -33,6 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     _loadApiKey();
     _loadInstructions();
     _loadAutoCreate();
+    _loadDailyReminder();
   }
 
   @override
@@ -51,6 +55,46 @@ class _SettingsScreenState extends State<SettingsScreen>
   Future<void> _toggleAutoCreate(bool value) async {
     await SettingsService.setAutoCreateTodos(value);
     if (mounted) setState(() => _autoCreateTodos = value);
+  }
+
+  Future<void> _loadDailyReminder() async {
+    final enabled = await SettingsService.getDailyReminderEnabled();
+    final time = await SettingsService.getDailyReminderTime();
+    if (mounted) {
+      setState(() {
+        _dailyReminderEnabled = enabled;
+        _dailyReminderTime = TimeOfDay(hour: time.hour, minute: time.minute);
+      });
+    }
+  }
+
+  Future<void> _toggleDailyReminder(bool value) async {
+    await SettingsService.setDailyReminderEnabled(value);
+    if (value) {
+      await PushNotificationService.scheduleDailyReminder(
+        hour: _dailyReminderTime.hour,
+        minute: _dailyReminderTime.minute,
+      );
+    } else {
+      await PushNotificationService.cancelDailyReminder();
+    }
+    if (mounted) setState(() => _dailyReminderEnabled = value);
+  }
+
+  Future<void> _pickReminderTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _dailyReminderTime,
+    );
+    if (picked == null || !mounted) return;
+    await SettingsService.setDailyReminderTime(picked.hour, picked.minute);
+    if (_dailyReminderEnabled) {
+      await PushNotificationService.scheduleDailyReminder(
+        hour: picked.hour,
+        minute: picked.minute,
+      );
+    }
+    if (mounted) setState(() => _dailyReminderTime = picked);
   }
 
   Future<void> _loadInstructions() async {
@@ -247,6 +291,29 @@ class _SettingsScreenState extends State<SettingsScreen>
               ],
             ),
           ),
+          _SectionHeader('Notifications'),
+          SwitchListTile(
+            secondary: Icon(
+              Icons.notifications_outlined,
+              color: _dailyReminderEnabled
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outline,
+            ),
+            title: const Text('Daily reminder'),
+            subtitle: const Text('Remind me about pending todos each day'),
+            value: _dailyReminderEnabled,
+            onChanged: _toggleDailyReminder,
+          ),
+          if (_dailyReminderEnabled)
+            ListTile(
+              leading: const Icon(Icons.access_time),
+              title: const Text('Reminder time'),
+              trailing: Text(
+                _dailyReminderTime.format(context),
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              onTap: _pickReminderTime,
+            ),
           _SectionHeader('Filters'),
           StreamBuilder<List>(
             stream: DatabaseService.instance.watchSenders(),

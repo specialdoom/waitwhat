@@ -47,6 +47,34 @@ class SettingsService {
     quotaExhaustedNotifier.value = false;
   }
 
+  static const _dailyReminderEnabledPref = 'daily_reminder_enabled';
+  static const _dailyReminderHourPref = 'daily_reminder_hour';
+  static const _dailyReminderMinutePref = 'daily_reminder_minute';
+
+  static Future<bool> getDailyReminderEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_dailyReminderEnabledPref) ?? false;
+  }
+
+  static Future<void> setDailyReminderEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_dailyReminderEnabledPref, value);
+  }
+
+  static Future<({int hour, int minute})> getDailyReminderTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (
+      hour: prefs.getInt(_dailyReminderHourPref) ?? 9,
+      minute: prefs.getInt(_dailyReminderMinutePref) ?? 0,
+    );
+  }
+
+  static Future<void> setDailyReminderTime(int hour, int minute) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_dailyReminderHourPref, hour);
+    await prefs.setInt(_dailyReminderMinutePref, minute);
+  }
+
   static const _autoCreateTodosPref = 'auto_create_todos';
 
   static Future<bool> getAutoCreateTodos() async {

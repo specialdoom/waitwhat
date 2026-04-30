@@ -4,6 +4,7 @@ import 'package:notification_listener_service/notification_listener_service.dart
 import 'package:notification_listener_service/notification_event.dart';
 import 'ai_service.dart';
 import 'database_service.dart';
+import 'push_notification_service.dart';
 import 'settings_service.dart';
 
 const _settingsChannel = MethodChannel('com.example.waitwhat/settings');
@@ -100,6 +101,7 @@ class NotificationService {
         sourceMessageId: messageId,
       );
       await DatabaseService.instance.markMessageConverted(messageId);
+      await PushNotificationService.notifyTodoCreated(suggestion.title);
     } on AiQuotaExceededException {
       await SettingsService.setGroqQuotaExhausted();
     } catch (_) {}
