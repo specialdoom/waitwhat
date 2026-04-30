@@ -19,6 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _listening = false;
   bool _checkingQuota = false;
   bool _autoCreateTodos = false;
+  bool _apiKeyVisible = false;
   final _apiKeyController = TextEditingController();
   final _instructionsController = TextEditingController();
   NotificationData? _notification;
@@ -185,11 +186,15 @@ class _SettingsScreenState extends State<SettingsScreen>
                 Expanded(
                   child: TextField(
                     controller: _apiKeyController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
+                    obscureText: !_apiKeyVisible,
+                    decoration: InputDecoration(
                       labelText: 'Groq API Key',
                       hintText: 'gsk_...',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(_apiKeyVisible ? Icons.visibility_off : Icons.visibility),
+                        onPressed: () => setState(() => _apiKeyVisible = !_apiKeyVisible),
+                      ),
                     ),
                     onSubmitted: (_) => _saveApiKey(),
                   ),

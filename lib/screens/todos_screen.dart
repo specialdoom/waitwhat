@@ -78,16 +78,14 @@ class TodosScreen extends StatelessWidget {
                 final todos = snapshot.data!;
                 if (todos.isEmpty) return const _EmptyState();
 
-                final groups = _groupTodos(todos);
+                final sorted = _sortTodos(todos);
 
-                return ListView(
-                  children: [
-                    for (final entry in groups.entries) ...[
-                      _SectionHeader(title: entry.key),
-                      for (final todo in entry.value) _TodoItem(todo: todo),
-                    ],
-                    const SizedBox(height: 80),
-                  ],
+                return ListView.builder(
+                  itemCount: sorted.length + 1,
+                  itemBuilder: (context, i) {
+                    if (i == sorted.length) return const SizedBox(height: 80);
+                    return _TodoItem(todo: sorted[i]);
+                  },
                 );
               },
             ),
@@ -97,56 +95,16 @@ class TodosScreen extends StatelessWidget {
     );
   }
 
-  Map<String, List<Todo>> _groupTodos(List<Todo> todos) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final tomorrow = today.add(const Duration(days: 1));
+  List<Todo> _sortTodos(List<Todo> todos) {
     final pending = todos.where((t) => !t.isCompleted).toList();
     final done = todos.where((t) => t.isCompleted).toList();
-
-    final todayList =
-        pending
-            .where(
-              (t) =>
-                  t.dueDate != null &&
-                  !t.dueDate!.isBefore(today) &&
-                  t.dueDate!.isBefore(tomorrow),
-            )
-            .toList()
-          ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
-
-    final upcomingList =
-        pending
-            .where((t) => t.dueDate != null && !t.dueDate!.isBefore(tomorrow))
-            .toList()
-          ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
-
-    final noDueDateList = pending.where((t) => t.dueDate == null).toList();
-
-    return {
-      if (todayList.isNotEmpty) 'Today': todayList,
-      if (upcomingList.isNotEmpty) 'Upcoming': upcomingList,
-      if (noDueDateList.isNotEmpty) 'No due date': noDueDateList,
-      if (done.isNotEmpty) 'Done': done,
-    };
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-        ),
-      ),
-    );
+    pending.sort((a, b) {
+      if (a.dueDate == null && b.dueDate == null) return 0;
+      if (a.dueDate == null) return 1;
+      if (b.dueDate == null) return -1;
+      return a.dueDate!.compareTo(b.dueDate!);
+    });
+    return [...pending, ...done];
   }
 }
 
