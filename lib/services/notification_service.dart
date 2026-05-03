@@ -20,6 +20,9 @@ class NotificationService {
   // duplicate notification events for the same message.
   static final _recentKeys = <String, DateTime>{};
 
+  // All senders seen in WhatsApp notifications this session (pre-filter).
+  static final seenSenders = <String>{};
+
   static Future<bool> isPermissionGranted() =>
       NotificationListenerService.isPermissionGranted();
 
@@ -55,6 +58,9 @@ class NotificationService {
     final trimmedBody = body.trim();
 
     if (_summaryPattern.hasMatch(trimmedBody)) return;
+
+    seenSenders.add(sender);
+
     final now = DateTime.now();
     final key = '$sender\x00$trimmedBody';
 
