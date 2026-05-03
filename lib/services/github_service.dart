@@ -46,7 +46,7 @@ class GithubService {
       body: jsonEncode({
         'title': '[${category.label}] $title',
         'body': body,
-        'labels': [category.githubLabel],
+        'labels': ['feedback', category.githubLabel],
       }),
     );
 
