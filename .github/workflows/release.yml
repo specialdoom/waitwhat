@@ -38,9 +38,9 @@ jobs:
         run: |
           cat > lib/config.dart <<EOF
           const String kGroqApiKey = '${{ secrets.GROQ_API_KEY }}';
-          const String kGithubToken = '${{ secrets.GITHUB_FEEDBACK_TOKEN }}';
-          const String kGithubOwner = '${{ secrets.GITHUB_OWNER }}';
-          const String kGithubRepo  = '${{ secrets.GITHUB_REPO }}';
+          const String kGithubToken = '${{ secrets.FEEDBACK_TOKEN }}';
+          const String kGithubOwner = '${{ secrets.REPO_OWNER }}';
+          const String kGithubRepo  = '${{ secrets.REPO_NAME }}';
           EOF
 
       - name: Flutter pub get
