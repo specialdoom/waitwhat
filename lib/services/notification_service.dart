@@ -95,19 +95,15 @@ class NotificationService {
         customInstructions: customInstructions,
       );
       if (suggestion == null) return;
-      final notes = [
-        if (suggestion.notes != null) suggestion.notes!,
-        trimmedBody,
-      ].join('\n\n');
       await DatabaseService.instance.saveTodo(
-        title: suggestion.title,
-        notes: notes,
+        title: sender,
+        notes: trimmedBody,
         dueDate: suggestion.dueDate,
         priority: suggestion.priority,
         sourceMessageId: messageId,
       );
       await DatabaseService.instance.markMessageConverted(messageId);
-      await PushNotificationService.notifyTodoCreated(suggestion.title);
+      await PushNotificationService.notifyTodoCreated(sender);
     } on AiQuotaExceededException {
       await SettingsService.setGroqQuotaExhausted();
     } catch (_) {}

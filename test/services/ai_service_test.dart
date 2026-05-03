@@ -22,8 +22,6 @@ void main() {
     test('returns AiSuggestion when needsTodo is true', () async {
       final client = MockClient((_) async => _groqResponse({
             'needsTodo': true,
-            'title': 'John',
-            'notes': 'Buy milk',
             'dueDate': '2026-05-01',
             'priority': 'high',
           }));
@@ -36,17 +34,13 @@ void main() {
       );
 
       expect(result, isNotNull);
-      expect(result!.title, 'John');
-      expect(result.notes, 'Buy milk');
-      expect(result.dueDate, DateTime(2026, 5, 1));
+      expect(result!.dueDate, DateTime(2026, 5, 1));
       expect(result.priority, Priority.high);
     });
 
     test('returns null when needsTodo is false', () async {
       final client = MockClient((_) async => _groqResponse({
             'needsTodo': false,
-            'title': null,
-            'notes': null,
             'dueDate': null,
             'priority': null,
           }));
@@ -88,11 +82,9 @@ void main() {
       expect(result, isNull);
     });
 
-    test('handles null dueDate and notes', () async {
+    test('handles null dueDate', () async {
       final client = MockClient((_) async => _groqResponse({
             'needsTodo': true,
-            'title': 'Jane',
-            'notes': null,
             'dueDate': null,
             'priority': 'medium',
           }));
@@ -105,15 +97,12 @@ void main() {
       );
 
       expect(result!.dueDate, isNull);
-      expect(result.notes, isNull);
       expect(result.priority, Priority.medium);
     });
 
-    test('handles "null" string for notes and dueDate', () async {
+    test('handles "null" string for dueDate', () async {
       final client = MockClient((_) async => _groqResponse({
             'needsTodo': true,
-            'title': 'Bob',
-            'notes': 'null',
             'dueDate': 'null',
             'priority': 'low',
           }));
@@ -125,8 +114,7 @@ void main() {
         client: client,
       );
 
-      expect(result!.notes, isNull);
-      expect(result.dueDate, isNull);
+      expect(result!.dueDate, isNull);
     });
 
     test('maps all priority strings correctly', () async {
@@ -140,8 +128,6 @@ void main() {
       for (final (priorityStr, expected) in cases) {
         final client = MockClient((_) async => _groqResponse({
               'needsTodo': true,
-              'title': 'X',
-              'notes': null,
               'dueDate': null,
               'priority': priorityStr,
             }));
@@ -154,25 +140,6 @@ void main() {
         );
         expect(result!.priority, expected, reason: 'priority "$priorityStr"');
       }
-    });
-
-    test('falls back to body as title when title is null', () async {
-      final client = MockClient((_) async => _groqResponse({
-            'needsTodo': true,
-            'title': null,
-            'notes': null,
-            'dueDate': null,
-            'priority': 'medium',
-          }));
-
-      final result = await AiService.suggestTodo(
-        sender: 'X',
-        body: 'original body',
-        apiKey: 'key',
-        client: client,
-      );
-
-      expect(result!.title, 'original body');
     });
   });
 

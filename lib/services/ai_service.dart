@@ -7,17 +7,10 @@ class AiQuotaExceededException implements Exception {}
 enum QuotaStatus { ok, exhausted, error }
 
 class AiSuggestion {
-  final String title;
-  final String? notes;
   final DateTime? dueDate;
   final Priority priority;
 
-  AiSuggestion({
-    required this.title,
-    this.notes,
-    this.dueDate,
-    required this.priority,
-  });
+  AiSuggestion({this.dueDate, required this.priority});
 }
 
 class AiService {
@@ -30,17 +23,13 @@ class AiService {
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     return '''
 Today's date is $today.
-Analyze this WhatsApp message and extract a single actionable todo item.
-Messages are most often written in Romanian — detect the language of the message and respond with the title and notes in that same language.
-Title should be onlythe sender "$sender".
+Decide if the following WhatsApp message from "$sender" requires any action.
+Greetings, acknowledgements, casual chat, and messages with no actionable request do NOT need a todo.
 Use today's date as reference when interpreting relative dates like "mâine", "săptămâna viitoare", "tomorrow", or "next week".${_customInstructionsBlock(customInstructions)}
-First decide if the message requires any action at all. Greetings, acknowledgements, casual chat, and messages with no actionable request do NOT need a todo.
 Respond with ONLY a valid JSON object:
 {
   "needsTodo": true or false,
-  "title": "the sender name",
-  "notes": "additional context or null",
-  "dueDate": "YYYY-MM-DD if a date is mentioned, otherwise null",
+  "dueDate": "YYYY-MM-DD if a specific date is mentioned, otherwise null",
   "priority": "low, medium, or high based on urgency, or null if needsTodo is false"
 }
 
@@ -131,13 +120,7 @@ $body
         _ => Priority.medium,
       };
 
-      final notes = data['notes'];
-      return AiSuggestion(
-        title: (data['title'] as String?) ?? body,
-        notes: (notes == null || notes == 'null') ? null : notes as String,
-        dueDate: dueDate,
-        priority: priority,
-      );
+      return AiSuggestion(dueDate: dueDate, priority: priority);
     } catch (e) {
       if (e is AiQuotaExceededException) rethrow;
       final msg = e.toString().toLowerCase();

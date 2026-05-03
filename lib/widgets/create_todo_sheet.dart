@@ -97,8 +97,8 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
         return;
       }
       setState(() {
-        _titleController.text = suggestion.title;
-        if (suggestion.notes != null) _notesController.text = suggestion.notes!;
+        _titleController.text = widget.sourceMessage!.sender;
+        _notesController.text = widget.sourceMessage!.body;
         if (suggestion.dueDate != null) _dueDate = suggestion.dueDate;
         _priority = suggestion.priority;
       });
