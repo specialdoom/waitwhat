@@ -11,6 +11,15 @@ import io.flutter.plugin.common.MethodChannel
 import java.util.Calendar
 
 class MainActivity : FlutterActivity() {
+    private var notificationsChannel: MethodChannel? = null
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.action == "OPEN_TODOS") {
+            notificationsChannel?.invokeMethod("navigateToTodos", null)
+        }
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
@@ -26,10 +35,12 @@ class MainActivity : FlutterActivity() {
             }
         }
 
-        MethodChannel(
+        val channel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "com.example.waitwhat/notifications",
-        ).setMethodCallHandler { call, result ->
+        )
+        notificationsChannel = channel
+        channel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "requestPermission" -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'todos_screen.dart';
 import 'messages_screen.dart';
 import 'settings_screen.dart';
+import '../services/push_notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,6 +13,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    PushNotificationService.setNavigateToTodosCallback(() {
+      if (mounted) setState(() => _selectedIndex = 0);
+    });
+  }
 
   static const _screens = [
     TodosScreen(),

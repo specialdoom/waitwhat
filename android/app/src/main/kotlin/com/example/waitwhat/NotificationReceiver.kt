@@ -29,11 +29,23 @@ class NotificationReceiver : BroadcastReceiver() {
             )
             manager.createNotificationChannel(channel)
 
+            val openIntent = android.content.Intent(context, MainActivity::class.java).apply {
+                action = "OPEN_TODOS"
+                flags = android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                        android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val contentIntent = android.app.PendingIntent.getActivity(
+                context, 0, openIntent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or
+                        android.app.PendingIntent.FLAG_IMMUTABLE,
+            )
+
             val notification = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setAutoCancel(true)
+                .setContentIntent(contentIntent)
                 .build()
 
             manager.notify(id, notification)

@@ -3,7 +3,19 @@ import 'package:flutter/services.dart';
 class PushNotificationService {
   static const _channel = MethodChannel('com.example.waitwhat/notifications');
 
-  static Future<void> initialize() async {}
+  static void Function()? _onNavigateToTodos;
+
+  static void setNavigateToTodosCallback(void Function() callback) {
+    _onNavigateToTodos = callback;
+  }
+
+  static Future<void> initialize() async {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'navigateToTodos') {
+        _onNavigateToTodos?.call();
+      }
+    });
+  }
 
   static Future<void> requestPermission() async {
     await _channel.invokeMethod('requestPermission');
