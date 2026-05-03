@@ -5,6 +5,7 @@ import '../services/notification_service.dart';
 import '../services/push_notification_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/app_notification.dart';
+import 'feedback_screen.dart';
 import 'sender_filter_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -318,6 +319,17 @@ class _SettingsScreenState extends State<SettingsScreen>
               ),
               onTap: _pickReminderTime,
             ),
+          _SectionHeader('Support'),
+          ListTile(
+            leading: const Icon(Icons.feedback_outlined),
+            title: const Text('Send Feedback'),
+            subtitle: const Text('Report a bug or request a feature'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const FeedbackScreen()),
+            ),
+          ),
           _SectionHeader('Filters'),
           StreamBuilder<List>(
             stream: DatabaseService.instance.watchSenders(),
