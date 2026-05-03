@@ -61,6 +61,39 @@ flutter run
 flutter test
 ```
 
+## Contributing
+
+### Commit messages
+
+All commits follow the [Conventional Commits](https://www.conventionalcommits.org) format. PR titles are validated by CI.
+
+| Type | When to use |
+|---|---|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `perf` | Performance improvement |
+| `refactor` | Code change that is not a feature or fix |
+| `test` | Adding or updating tests |
+| `docs` | Documentation only |
+| `chore` | Dependency updates, config, tooling |
+| `ci` | CI/CD changes |
+| `revert` | Reverting a previous commit |
+
+### Issue labels
+
+| Label | Description |
+|---|---|
+| `bug` | Something isn't working |
+| `enhancement` | New feature or request |
+| `performance` | Performance optimisation |
+| `memory` | Memory leak or excessive usage |
+| `network` | Network / API issue |
+| `architecture` | Code structure or correctness |
+| `android` | Android-specific issue |
+| `feedback` | Submitted via in-app feedback form or by a user |
+| `documentation` | Improvements or additions to documentation |
+| `ci` | CI/CD workflow changes |
+
 ## Releasing
 
 See [RELEASING.md](RELEASING.md).
