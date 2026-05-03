@@ -1,0 +1,61 @@
+name: Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.keystore
+
+      - name: Write key.properties
+        run: |
+          cat > android/key.properties <<EOF
+          storeFile=../app/release.keystore
+          storePassword=${{ secrets.STORE_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          EOF
+
+      - name: Write config.dart
+        run: |
+          cat > lib/config.dart <<EOF
+          const String kGroqApiKey = '${{ secrets.GROQ_API_KEY }}';
+          const String kGithubToken = '${{ secrets.GITHUB_FEEDBACK_TOKEN }}';
+          const String kGithubOwner = '${{ secrets.GITHUB_OWNER }}';
+          const String kGithubRepo  = '${{ secrets.GITHUB_REPO }}';
+          EOF
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Rename APK
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/waitwhat-${TAG}.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/waitwhat-v*.apk
+          generate_release_notes: true
