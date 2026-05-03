@@ -10,10 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.2.0
-  notification_listener_service: 0.3.5
-  home_widget: 0.9.1
+  notification_listener_service: any
+  home_widget: any
   drift: ^2.22.0
-  drift_flutter: ^0.2.4
+  drift_flutter: ^0.3.0
   path_provider: ^2.1.0
   shared_preferences: ^2.2.0
 
