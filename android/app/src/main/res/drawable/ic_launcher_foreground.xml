@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="432"
+    android:viewportHeight="432">
+
+    <!-- line 1: translate(94,122) rotate(-4) -->
+    <group
+        android:translateX="94"
+        android:translateY="122"
+        android:pivotX="0"
+        android:pivotY="0"
+        android:rotation="-4">
+        <path
+            android:fillColor="#0F3D2E"
+            android:pathData="M18,0 L226,0 Q244,0 244,18 Q244,36 226,36 L18,36 Q0,36 0,18 Q0,0 18,0 Z" />
+    </group>
+
+    <!-- line 2: translate(82,192) rotate(2) -->
+    <group
+        android:translateX="82"
+        android:translateY="192"
+        android:pivotX="0"
+        android:pivotY="0"
+        android:rotation="2">
+        <path
+            android:fillColor="#0F3D2E"
+            android:pathData="M18,0 L190,0 Q208,0 208,18 Q208,36 190,36 L18,36 Q0,36 0,18 Q0,0 18,0 Z" />
+    </group>
+
+    <!-- line 3: translate(94,262) no rotation -->
+    <group
+        android:translateX="94"
+        android:translateY="262">
+        <path
+            android:fillColor="#0F3D2E"
+            android:pathData="M18,0 L152,0 Q170,0 170,18 Q170,36 152,36 L18,36 Q0,36 0,18 Q0,0 18,0 Z" />
+    </group>
+
+    <!-- dot: circle cx=338 cy=280 r=14 -->
+    <path
+        android:fillColor="#0F3D2E"
+        android:pathData="M338,266 A14,14 0 1,0 338.001,266 Z" />
+
+</vector>

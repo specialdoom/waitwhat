@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local config — contains API keys, never commit
+lib/config.dart
+
+# Android signing — never commit
+android/key.properties
+android/*.keystore
+android/*.jks

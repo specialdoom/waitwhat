@@ -1,7 +1,7 @@
 name: waitwhat
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ^3.11.5
@@ -9,19 +9,22 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_generative_ai: 0.4.7
-  notification_listener_service: 0.3.5
-  home_widget: 0.9.1
-  isar: 3.1.0+1
-  isar_flutter_libs: 3.1.0+1
+  http: ^1.2.0
+  notification_listener_service: any
+  home_widget: any
+  drift: ^2.22.0
+  drift_flutter: ^0.3.0
   path_provider: ^2.1.0
+  shared_preferences: ^2.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  isar_generator: 3.1.0+1
+  drift_dev: ^2.22.0
   build_runner: ^2.4.0
-
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icon.svg
+    - assets/icon_foreground.svg
