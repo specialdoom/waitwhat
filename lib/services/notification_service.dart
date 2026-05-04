@@ -57,9 +57,9 @@ class NotificationService {
     final sender = event.title ?? 'Unknown';
     final trimmedBody = body.trim();
 
-    if (_summaryPattern.hasMatch(trimmedBody)) return;
-
     seenSenders.add(sender);
+
+    if (_summaryPattern.hasMatch(trimmedBody)) return;
 
     final now = DateTime.now();
     final key = '$sender\x00$trimmedBody';
