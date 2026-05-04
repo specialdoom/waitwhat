@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'permission_screen.dart';
+import '../main.dart';
 import '../services/app_init_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -110,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFC8F25A),
+      backgroundColor: kBrandGreen,
       body: AnimatedBuilder(
         animation: _exitController,
         builder: (context, child) => Opacity(
