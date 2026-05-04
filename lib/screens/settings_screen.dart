@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
 import '../services/ai_service.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
@@ -180,7 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   ? Icons.notifications_active
                   : Icons.notifications_off,
               color: _permissionGranted
-                  ? kBrandGreen
+                  ? Theme.of(context).colorScheme.primary
                   : Theme.of(context).colorScheme.error,
             ),
             title: const Text('Notification Access'),
@@ -197,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen>
               secondary: Icon(
                 _listening ? Icons.hearing : Icons.hearing_disabled,
                 color: _listening
-                    ? kBrandGreen
+                    ? Theme.of(context).colorScheme.primary
                     : Theme.of(context).colorScheme.outline,
               ),
               title: const Text('Listen for Messages'),
@@ -212,7 +211,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             secondary: Icon(
               Icons.auto_awesome,
               color: _autoCreateTodos
-                  ? kBrandGreen
+                  ? Theme.of(context).colorScheme.primary
                   : Theme.of(context).colorScheme.outline,
             ),
             title: const Text('Auto-create todos'),
@@ -302,7 +301,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             secondary: Icon(
               Icons.notifications_outlined,
               color: _dailyReminderEnabled
-                  ? kBrandGreen
+                  ? Theme.of(context).colorScheme.primary
                   : Theme.of(context).colorScheme.outline,
             ),
             title: const Text('Daily reminder'),
@@ -369,7 +368,7 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: kBrandGreen,
+              color: Theme.of(context).colorScheme.primary,
             ),
       ),
     );

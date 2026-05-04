@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
 import '../database/app_database.dart';
 import '../services/database_service.dart';
 import '../widgets/create_todo_sheet.dart';
@@ -75,7 +74,7 @@ class _MessageItem extends StatelessWidget {
       trailing: message.isConvertedToTodo
           ? Icon(
               Icons.check_circle,
-              color: kBrandGreen,
+              color: Theme.of(context).colorScheme.primary,
               size: 18,
             )
           : null,

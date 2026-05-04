@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
 import '../services/notification_service.dart';
 
 class PermissionScreen extends StatefulWidget {
@@ -55,7 +54,7 @@ class _PermissionScreenState extends State<PermissionScreen>
               Icon(
                 Icons.notifications_off_outlined,
                 size: 72,
-                color: kBrandGreen,
+                color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(height: 24),
               Text(
