@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'permission_screen.dart';
+import '../services/app_init_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -71,17 +72,18 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    _controller.forward().then((_) async {
+    Future.wait([
+      _controller.forward(),
+      AppInitService.initialize(),
+    ]).then((_) async {
       await Future.delayed(const Duration(milliseconds: 300));
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (_, __, ___) =>
+            pageBuilder: (context, animation, secondary) =>
                 const PermissionScreen(child: HomeScreen()),
-            transitionsBuilder: (context, animation, secondary, child) => FadeTransition(
-              opacity: animation,
-              child: child,
-            ),
+            transitionsBuilder: (context, animation, secondary, child) =>
+                FadeTransition(opacity: animation, child: child),
             transitionDuration: const Duration(milliseconds: 400),
           ),
         );
