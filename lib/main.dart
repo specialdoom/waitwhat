@@ -1,28 +1,10 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
-import 'screens/permission_screen.dart';
-import 'services/database_service.dart';
-import 'services/push_notification_service.dart';
-import 'services/settings_service.dart';
-import 'services/widget_service.dart';
+import 'screens/splash_screen.dart';
 
-Future<void> main() async {
+const kBrandGreen = Color(0xFFC8F25A);
+
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  DatabaseService.initialize();
-  await SettingsService.loadQuotaState();
-  await PushNotificationService.initialize();
-  await PushNotificationService.requestPermission();
-  DatabaseService.instance.watchTodos().listen((_) => WidgetService.update());
-
-  final reminderEnabled = await SettingsService.getDailyReminderEnabled();
-  if (reminderEnabled) {
-    final time = await SettingsService.getDailyReminderTime();
-    await PushNotificationService.scheduleDailyReminder(
-      hour: time.hour,
-      minute: time.minute,
-    );
-  }
-
   runApp(const MainApp());
 }
 
@@ -36,8 +18,12 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00A884)),
+        appBarTheme: const AppBarTheme(
+          iconTheme: IconThemeData(color: kBrandGreen),
+          actionsIconTheme: IconThemeData(color: kBrandGreen),
+        ),
       ),
-      home: const PermissionScreen(child: HomeScreen()),
+      home: const SplashScreen(),
     );
   }
 }

@@ -57,9 +57,9 @@ class NotificationService {
     final sender = event.title ?? 'Unknown';
     final trimmedBody = body.trim();
 
-    if (_summaryPattern.hasMatch(trimmedBody)) return;
-
     seenSenders.add(sender);
+
+    if (_summaryPattern.hasMatch(trimmedBody)) return;
 
     final now = DateTime.now();
     final key = '$sender\x00$trimmedBody';
@@ -85,14 +85,11 @@ class NotificationService {
     final apiKey = await SettingsService.getGroqApiKey();
     if (apiKey == null) return;
 
-    final customInstructions = await SettingsService.getCustomInstructions();
-
     try {
       final suggestion = await AiService.suggestTodo(
         sender: sender,
         body: trimmedBody,
         apiKey: apiKey,
-        customInstructions: customInstructions,
       );
       if (suggestion == null) return;
       await DatabaseService.instance.saveTodo(

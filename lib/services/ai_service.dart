@@ -17,7 +17,7 @@ class AiService {
   static const _endpoint = 'https://api.groq.com/openai/v1/chat/completions';
   static const _model = 'llama-3.1-8b-instant';
 
-  static String _prompt(String sender, String body, String? customInstructions) {
+  static String _prompt(String sender, String body) {
     final now = DateTime.now();
     final today =
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
@@ -25,7 +25,7 @@ class AiService {
 Today's date is $today.
 Decide if the following WhatsApp message from "$sender" requires any action.
 Greetings, acknowledgements, casual chat, and messages with no actionable request do NOT need a todo.
-Use today's date as reference when interpreting relative dates like "mâine", "săptămâna viitoare", "tomorrow", or "next week".${_customInstructionsBlock(customInstructions)}
+Use today's date as reference when interpreting relative dates like "mâine", "săptămâna viitoare", "tomorrow", or "next week".
 Respond with ONLY a valid JSON object:
 {
   "needsTodo": true or false,
@@ -37,11 +37,6 @@ Message from $sender:
 $body
 ''';
   }
-
-  static String _customInstructionsBlock(String? instructions) =>
-      instructions != null
-          ? '\nAdditional rules to follow:\n$instructions\n'
-          : '';
 
   static Future<QuotaStatus> checkQuota({
     required String apiKey,
@@ -75,7 +70,6 @@ $body
     required String sender,
     required String body,
     required String apiKey,
-    String? customInstructions,
     http.Client? client,
   }) async {
     final c = client ?? http.Client();
@@ -89,7 +83,7 @@ $body
         body: jsonEncode({
           'model': _model,
           'messages': [
-            {'role': 'user', 'content': _prompt(sender, body, customInstructions)},
+            {'role': 'user', 'content': _prompt(sender, body)},
           ],
           'temperature': 0,
           'response_format': {'type': 'json_object'},
