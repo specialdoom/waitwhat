@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'permission_screen.dart';
-import '../main.dart';
+import '../theme.dart';
 import '../services/app_init_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -162,8 +162,8 @@ class _LogoPainter extends CustomPainter {
     required this.dot,
   });
 
-  static const _bg = Color(0xFFC8F25A);
-  static const _fg = Color(0xFF0F3D2E);
+  static const _bg = kBrandGreen;
+  static const _fg = kBrandDark;
 
   // Original SVG viewBox is 432×432; we scale to whatever size is painted.
   static const _svgSize = 432.0;

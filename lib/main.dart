@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
-
-const kBrandGreen = Color(0xFFC8F25A);
+import 'theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
