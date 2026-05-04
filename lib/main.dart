@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
-import 'screens/permission_screen.dart';
+import 'screens/splash_screen.dart';
 import 'services/database_service.dart';
 import 'services/push_notification_service.dart';
 import 'services/settings_service.dart';
@@ -37,7 +36,7 @@ class MainApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00A884)),
       ),
-      home: const PermissionScreen(child: HomeScreen()),
+      home: const SplashScreen(),
     );
   }
 }
