@@ -87,20 +87,4 @@ class SettingsService {
     await prefs.setBool(_autoCreateTodosPref, value);
   }
 
-  static const _customInstructionsPref = 'custom_instructions';
-
-  static Future<String?> getCustomInstructions() async {
-    final prefs = await SharedPreferences.getInstance();
-    final v = prefs.getString(_customInstructionsPref);
-    return (v != null && v.isNotEmpty) ? v : null;
-  }
-
-  static Future<void> saveCustomInstructions(String value) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (value.trim().isEmpty) {
-      await prefs.remove(_customInstructionsPref);
-    } else {
-      await prefs.setString(_customInstructionsPref, value.trim());
-    }
-  }
 }

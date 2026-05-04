@@ -83,12 +83,10 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
       _notification = null;
     });
     try {
-      final customInstructions = await SettingsService.getCustomInstructions();
       final suggestion = await AiService.suggestTodo(
         sender: widget.sourceMessage!.sender,
         body: widget.sourceMessage!.body,
         apiKey: apiKey,
-        customInstructions: customInstructions,
       );
       if (!mounted) return;
       setState(() => _aiLoading = false);

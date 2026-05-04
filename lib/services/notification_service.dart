@@ -85,14 +85,11 @@ class NotificationService {
     final apiKey = await SettingsService.getGroqApiKey();
     if (apiKey == null) return;
 
-    final customInstructions = await SettingsService.getCustomInstructions();
-
     try {
       final suggestion = await AiService.suggestTodo(
         sender: sender,
         body: trimmedBody,
         apiKey: apiKey,
-        customInstructions: customInstructions,
       );
       if (suggestion == null) return;
       await DatabaseService.instance.saveTodo(

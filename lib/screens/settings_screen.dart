@@ -25,7 +25,6 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _dailyReminderEnabled = false;
   TimeOfDay _dailyReminderTime = const TimeOfDay(hour: 9, minute: 0);
   final _apiKeyController = TextEditingController();
-  final _instructionsController = TextEditingController();
   NotificationData? _notification;
 
   @override
@@ -35,7 +34,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     _checkPermission();
     _listening = NotificationService.isRunning;
     _loadApiKey();
-    _loadInstructions();
     _loadAutoCreate();
     _loadDailyReminder();
   }
@@ -44,7 +42,6 @@ class _SettingsScreenState extends State<SettingsScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _apiKeyController.dispose();
-    _instructionsController.dispose();
     super.dispose();
   }
 
@@ -98,18 +95,8 @@ class _SettingsScreenState extends State<SettingsScreen>
     if (mounted) setState(() => _dailyReminderTime = picked);
   }
 
-  Future<void> _loadInstructions() async {
-    final v = await SettingsService.getCustomInstructions();
-    if (mounted && v != null) _instructionsController.text = v;
-  }
-
   void _showNotification(String message, NotificationType type) {
     setState(() => _notification = NotificationData(message, type));
-  }
-
-  Future<void> _saveInstructions() async {
-    await SettingsService.saveCustomInstructions(_instructionsController.text);
-    if (mounted) _showNotification('Instructions saved', NotificationType.success);
   }
 
   Future<void> _loadApiKey() async {
@@ -265,33 +252,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                         )
                       : const Icon(Icons.network_check),
                   tooltip: 'Test connection',
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _instructionsController,
-                    maxLines: 3,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      labelText: 'Custom instructions',
-                      hintText: 'e.g. Messages about payments are always high priority',
-                      border: OutlineInputBorder(),
-                      alignLabelWithHint: true,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  onPressed: _saveInstructions,
-                  icon: const Icon(Icons.check),
-                  tooltip: 'Save',
                 ),
               ],
             ),
