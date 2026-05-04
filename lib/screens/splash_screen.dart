@@ -11,8 +11,10 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _controller;
+  late final AnimationController _exitController;
+  late final Animation<double> _exitOpacity;
 
   // Logo scale + fade
   late final Animation<double> _scale;
@@ -32,6 +34,13 @@ class _SplashScreenState extends State<SplashScreen>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1600),
+    );
+    _exitController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _exitOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _exitController, curve: Curves.easeIn),
     );
 
     _scale = Tween<double>(begin: 0.72, end: 1.0).animate(
@@ -76,24 +85,25 @@ class _SplashScreenState extends State<SplashScreen>
       _controller.forward(),
       AppInitService.initialize(),
     ]).then((_) async {
-      await Future.delayed(const Duration(milliseconds: 300));
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondary) =>
-                const PermissionScreen(child: HomeScreen()),
-            transitionsBuilder: (context, animation, secondary, child) =>
-                FadeTransition(opacity: animation, child: child),
-            transitionDuration: const Duration(milliseconds: 400),
-          ),
-        );
-      }
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (!mounted) return;
+      await _exitController.forward();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondary) =>
+              const PermissionScreen(child: HomeScreen()),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
     });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _exitController.dispose();
     super.dispose();
   }
 
@@ -101,24 +111,31 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFC8F25A),
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) => Opacity(
-            opacity: _opacity.value,
-            child: Transform.scale(
-              scale: _scale.value,
-              child: SizedBox(
-                width: 180,
-                height: 180,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(42),
-                  child: CustomPaint(
-                    painter: _LogoPainter(
-                      bar1: _bar1.value,
-                      bar2: _bar2.value,
-                      bar3: _bar3.value,
-                      dot: _dot.value,
+      body: AnimatedBuilder(
+        animation: _exitController,
+        builder: (context, child) => Opacity(
+          opacity: _exitOpacity.value,
+          child: child,
+        ),
+        child: Center(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) => Opacity(
+              opacity: _opacity.value,
+              child: Transform.scale(
+                scale: _scale.value,
+                child: SizedBox(
+                  width: 180,
+                  height: 180,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(42),
+                    child: CustomPaint(
+                      painter: _LogoPainter(
+                        bar1: _bar1.value,
+                        bar2: _bar2.value,
+                        bar3: _bar3.value,
+                        dot: _dot.value,
+                      ),
                     ),
                   ),
                 ),
