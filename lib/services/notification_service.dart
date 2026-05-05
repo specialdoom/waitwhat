@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:notification_listener_service/notification_listener_service.dart';
 import 'package:notification_listener_service/notification_event.dart';
@@ -22,6 +23,12 @@ class NotificationService {
 
   // All senders seen in WhatsApp notifications this session (pre-filter).
   static final seenSenders = <String>{};
+
+  @visibleForTesting
+  static void trackSender(String sender, String? body) {
+    if (body == null || body.trim().isEmpty) return;
+    seenSenders.add(sender);
+  }
 
   static Future<bool> isPermissionGranted() =>
       NotificationListenerService.isPermissionGranted();
@@ -57,7 +64,7 @@ class NotificationService {
     final sender = event.title ?? 'Unknown';
     final trimmedBody = body.trim();
 
-    seenSenders.add(sender);
+    trackSender(sender, body);
 
     if (_summaryPattern.hasMatch(trimmedBody)) return;
 
