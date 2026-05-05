@@ -51,7 +51,7 @@ class GithubService {
     ).timeout(const Duration(seconds: 30));
 
     if (response.statusCode != 201) {
-      throw Exception('GitHub API error ${response.statusCode}');
+      throw Exception('GitHub API error ${response.statusCode}: ${response.body}');
     }
   }
 }
