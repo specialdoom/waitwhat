@@ -110,6 +110,8 @@ class NotificationService {
       await PushNotificationService.notifyTodoCreated(sender);
     } on AiQuotaExceededException {
       await SettingsService.setGroqQuotaExhausted();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Failed to auto-create todo: $e');
+    }
   }
 }
