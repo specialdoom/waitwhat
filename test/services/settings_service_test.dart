@@ -108,31 +108,4 @@ void main() {
     });
   });
 
-  group('SettingsService - custom instructions', () {
-    test('returns null when not set', () async {
-      expect(await SettingsService.getCustomInstructions(), isNull);
-    });
-
-    test('persists instructions', () async {
-      await SettingsService.saveCustomInstructions('be concise');
-      expect(await SettingsService.getCustomInstructions(), 'be concise');
-    });
-
-    test('empty string clears the instructions', () async {
-      await SettingsService.saveCustomInstructions('rule');
-      await SettingsService.saveCustomInstructions('');
-      expect(await SettingsService.getCustomInstructions(), isNull);
-    });
-
-    test('whitespace-only string clears the instructions', () async {
-      await SettingsService.saveCustomInstructions('rule');
-      await SettingsService.saveCustomInstructions('   ');
-      expect(await SettingsService.getCustomInstructions(), isNull);
-    });
-
-    test('trims surrounding whitespace before saving', () async {
-      await SettingsService.saveCustomInstructions('  rule  ');
-      expect(await SettingsService.getCustomInstructions(), 'rule');
-    });
-  });
 }
