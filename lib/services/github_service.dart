@@ -48,7 +48,7 @@ class GithubService {
         'body': body,
         'labels': ['feedback', category.githubLabel],
       }),
-    );
+    ).timeout(const Duration(seconds: 30));
 
     if (response.statusCode != 201) {
       throw Exception('GitHub API error ${response.statusCode}');

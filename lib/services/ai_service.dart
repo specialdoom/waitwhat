@@ -57,7 +57,7 @@ $body
           ],
           'max_tokens': 1,
         }),
-      );
+      ).timeout(const Duration(seconds: 30));
       if (response.statusCode == 200) return QuotaStatus.ok;
       if (response.statusCode == 429) return QuotaStatus.exhausted;
       return QuotaStatus.error;
@@ -88,7 +88,7 @@ $body
           'temperature': 0,
           'response_format': {'type': 'json_object'},
         }),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 429) throw AiQuotaExceededException();
       if (response.statusCode != 200) return null;
