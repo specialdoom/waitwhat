@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/app_database.dart';
 import '../services/database_service.dart';
-import '../services/notification_service.dart';
 
 class SenderFilterScreen extends StatelessWidget {
   const SenderFilterScreen({super.key});
@@ -95,15 +94,11 @@ class _AddSenderSheetState extends State<_AddSenderSheet>
   Future<void> _loadSenders() async {
     final db = DatabaseService.instance;
     final existing = await db.getAllSenders();
-    final fromMessages = await db.getDistinctMessageSenders();
+    final seenSenders = await db.getSeenSenderNames();
     if (!mounted) return;
     setState(() {
       _existingSenders = existing.map((s) => s.name).toSet();
-      final candidates = {
-        ...fromMessages,
-        ...NotificationService.seenSenders,
-      };
-      _messageSenders = candidates
+      _messageSenders = seenSenders
           .where((name) => !_existingSenders.contains(name))
           .toList()
         ..sort();

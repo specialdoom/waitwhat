@@ -30,13 +30,18 @@ class FilteredSenders extends Table {
   TextColumn get name => text().unique()();
 }
 
-@DriftDatabase(tables: [WhatsAppMessages, Todos, FilteredSenders])
+class SeenSenders extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().unique()();
+}
+
+@DriftDatabase(tables: [WhatsAppMessages, Todos, FilteredSenders, SeenSenders])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? driftDatabase(name: 'waitwhat'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -44,6 +49,13 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.database.customStatement(
               'CREATE TABLE IF NOT EXISTS filtered_senders '
+              '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+              'name TEXT NOT NULL UNIQUE)',
+            );
+          }
+          if (from < 3) {
+            await m.database.customStatement(
+              'CREATE TABLE IF NOT EXISTS seen_senders '
               '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
               'name TEXT NOT NULL UNIQUE)',
             );

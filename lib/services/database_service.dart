@@ -125,4 +125,15 @@ class DatabaseService {
         .map((r) => r.read(_db.whatsAppMessages.sender)!)
         .toList();
   }
+
+  // ── Seen Senders ──────────────────────────────────────────────────────────
+
+  Future<void> saveSeenSender(String name) => _db
+      .into(_db.seenSenders)
+      .insertOnConflictUpdate(SeenSendersCompanion.insert(name: name));
+
+  Future<List<String>> getSeenSenderNames() async {
+    final rows = await _db.select(_db.seenSenders).get();
+    return rows.map((r) => r.name).toList();
+  }
 }

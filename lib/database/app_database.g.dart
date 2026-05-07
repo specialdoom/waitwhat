@@ -1066,6 +1066,194 @@ class FilteredSendersCompanion extends UpdateCompanion<FilteredSender> {
   }
 }
 
+class $SeenSendersTable extends SeenSenders
+    with TableInfo<$SeenSendersTable, SeenSender> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SeenSendersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'seen_senders';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SeenSender> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SeenSender map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SeenSender(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $SeenSendersTable createAlias(String alias) {
+    return $SeenSendersTable(attachedDatabase, alias);
+  }
+}
+
+class SeenSender extends DataClass implements Insertable<SeenSender> {
+  final int id;
+  final String name;
+  const SeenSender({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  SeenSendersCompanion toCompanion(bool nullToAbsent) {
+    return SeenSendersCompanion(id: Value(id), name: Value(name));
+  }
+
+  factory SeenSender.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SeenSender(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  SeenSender copyWith({int? id, String? name}) =>
+      SeenSender(id: id ?? this.id, name: name ?? this.name);
+  SeenSender copyWithCompanion(SeenSendersCompanion data) {
+    return SeenSender(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeenSender(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SeenSender && other.id == this.id && other.name == this.name);
+}
+
+class SeenSendersCompanion extends UpdateCompanion<SeenSender> {
+  final Value<int> id;
+  final Value<String> name;
+  const SeenSendersCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  SeenSendersCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+  }) : name = Value(name);
+  static Insertable<SeenSender> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  SeenSendersCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return SeenSendersCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeenSendersCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1076,6 +1264,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $FilteredSendersTable filteredSenders = $FilteredSendersTable(
     this,
   );
+  late final $SeenSendersTable seenSenders = $SeenSendersTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1084,6 +1273,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     whatsAppMessages,
     todos,
     filteredSenders,
+    seenSenders,
   ];
 }
 
@@ -1667,6 +1857,129 @@ typedef $$FilteredSendersTableProcessedTableManager =
       FilteredSender,
       PrefetchHooks Function()
     >;
+typedef $$SeenSendersTableCreateCompanionBuilder =
+    SeenSendersCompanion Function({Value<int> id, required String name});
+typedef $$SeenSendersTableUpdateCompanionBuilder =
+    SeenSendersCompanion Function({Value<int> id, Value<String> name});
+
+class $$SeenSendersTableFilterComposer
+    extends Composer<_$AppDatabase, $SeenSendersTable> {
+  $$SeenSendersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SeenSendersTableOrderingComposer
+    extends Composer<_$AppDatabase, $SeenSendersTable> {
+  $$SeenSendersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SeenSendersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SeenSendersTable> {
+  $$SeenSendersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+}
+
+class $$SeenSendersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SeenSendersTable,
+          SeenSender,
+          $$SeenSendersTableFilterComposer,
+          $$SeenSendersTableOrderingComposer,
+          $$SeenSendersTableAnnotationComposer,
+          $$SeenSendersTableCreateCompanionBuilder,
+          $$SeenSendersTableUpdateCompanionBuilder,
+          (
+            SeenSender,
+            BaseReferences<_$AppDatabase, $SeenSendersTable, SeenSender>,
+          ),
+          SeenSender,
+          PrefetchHooks Function()
+        > {
+  $$SeenSendersTableTableManager(_$AppDatabase db, $SeenSendersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SeenSendersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SeenSendersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SeenSendersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+              }) => SeenSendersCompanion(id: id, name: name),
+          createCompanionCallback:
+              ({Value<int> id = const Value.absent(), required String name}) =>
+                  SeenSendersCompanion.insert(id: id, name: name),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SeenSendersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SeenSendersTable,
+      SeenSender,
+      $$SeenSendersTableFilterComposer,
+      $$SeenSendersTableOrderingComposer,
+      $$SeenSendersTableAnnotationComposer,
+      $$SeenSendersTableCreateCompanionBuilder,
+      $$SeenSendersTableUpdateCompanionBuilder,
+      (
+        SeenSender,
+        BaseReferences<_$AppDatabase, $SeenSendersTable, SeenSender>,
+      ),
+      SeenSender,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1677,4 +1990,6 @@ class $AppDatabaseManager {
       $$TodosTableTableManager(_db, _db.todos);
   $$FilteredSendersTableTableManager get filteredSenders =>
       $$FilteredSendersTableTableManager(_db, _db.filteredSenders);
+  $$SeenSendersTableTableManager get seenSenders =>
+      $$SeenSendersTableTableManager(_db, _db.seenSenders);
 }
