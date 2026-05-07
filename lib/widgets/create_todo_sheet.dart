@@ -4,6 +4,7 @@ import '../database/app_database.dart';
 import '../services/ai_service.dart';
 import '../services/database_service.dart';
 import '../services/settings_service.dart';
+import '../utils/date_formatter.dart';
 import 'app_notification.dart';
 
 void showCreateTodoSheet(
@@ -68,6 +69,9 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
 
   void _showNotification(String message, NotificationType type) {
     setState(() => _notification = NotificationData(message, type));
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _notification = null);
+    });
   }
 
   Future<void> _suggestWithAi() async {
@@ -158,20 +162,6 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
     if (mounted) Navigator.pop(context);
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final diff =
-        DateTime(date.year, date.month, date.day).difference(today).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Tomorrow';
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return '${months[date.month - 1]} ${date.day}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.existingTodo != null;
@@ -254,7 +244,7 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
                   onPressed: _pickDate,
                   icon: const Icon(Icons.calendar_today_outlined, size: 18),
                   label: Text(
-                    _dueDate == null ? 'Set due date' : _formatDate(_dueDate!),
+                    _dueDate == null ? 'Set due date' : DateFormatter.dueDate(_dueDate!),
                   ),
                 ),
               ),

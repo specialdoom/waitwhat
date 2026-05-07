@@ -65,6 +65,7 @@ class NotificationService {
     final trimmedBody = body.trim();
 
     trackSender(sender, body);
+    await DatabaseService.instance.saveSeenSender(sender);
 
     if (_summaryPattern.hasMatch(trimmedBody)) return;
 

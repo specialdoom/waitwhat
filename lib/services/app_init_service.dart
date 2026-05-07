@@ -1,15 +1,18 @@
+import 'dart:async';
 import 'database_service.dart';
 import 'push_notification_service.dart';
 import 'settings_service.dart';
 import 'widget_service.dart';
 
 class AppInitService {
+  static StreamSubscription? _todosSubscription;
+
   static Future<void> initialize() async {
     DatabaseService.initialize();
     await SettingsService.loadQuotaState();
     await PushNotificationService.initialize();
     await PushNotificationService.requestPermission();
-    DatabaseService.instance.watchTodos().listen((_) => WidgetService.update());
+    _todosSubscription = DatabaseService.instance.watchTodos().listen((_) => WidgetService.update());
 
     final reminderEnabled = await SettingsService.getDailyReminderEnabled();
     if (reminderEnabled) {
@@ -19,5 +22,10 @@ class AppInitService {
         minute: time.minute,
       );
     }
+  }
+
+  static void dispose() {
+    _todosSubscription?.cancel();
+    _todosSubscription = null;
   }
 }

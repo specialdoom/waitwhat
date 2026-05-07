@@ -20,6 +20,8 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _permissionGranted = false;
   bool _listening = false;
   bool _checkingQuota = false;
+  DateTime? _lastQuotaCheck;
+  bool _checkingPermission = false;
   bool _autoCreateTodos = false;
   bool _apiKeyVisible = false;
   bool _dailyReminderEnabled = false;
@@ -51,8 +53,12 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _toggleAutoCreate(bool value) async {
-    await SettingsService.setAutoCreateTodos(value);
-    if (mounted) setState(() => _autoCreateTodos = value);
+    try {
+      await SettingsService.setAutoCreateTodos(value);
+      if (mounted) setState(() => _autoCreateTodos = value);
+    } catch (_) {
+      if (mounted) _showNotification('Failed to save setting', NotificationType.error);
+    }
   }
 
   Future<void> _loadDailyReminder() async {
@@ -67,16 +73,20 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _toggleDailyReminder(bool value) async {
-    await SettingsService.setDailyReminderEnabled(value);
-    if (value) {
-      await PushNotificationService.scheduleDailyReminder(
-        hour: _dailyReminderTime.hour,
-        minute: _dailyReminderTime.minute,
-      );
-    } else {
-      await PushNotificationService.cancelDailyReminder();
+    try {
+      await SettingsService.setDailyReminderEnabled(value);
+      if (value) {
+        await PushNotificationService.scheduleDailyReminder(
+          hour: _dailyReminderTime.hour,
+          minute: _dailyReminderTime.minute,
+        );
+      } else {
+        await PushNotificationService.cancelDailyReminder();
+      }
+      if (mounted) setState(() => _dailyReminderEnabled = value);
+    } catch (_) {
+      if (mounted) _showNotification('Failed to save setting', NotificationType.error);
     }
-    if (mounted) setState(() => _dailyReminderEnabled = value);
   }
 
   Future<void> _pickReminderTime() async {
@@ -97,6 +107,9 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   void _showNotification(String message, NotificationType type) {
     setState(() => _notification = NotificationData(message, type));
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _notification = null);
+    });
   }
 
   Future<void> _loadApiKey() async {
@@ -115,16 +128,25 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _checkPermission() async {
-    final granted = await NotificationService.isPermissionGranted();
-    if (mounted) {
-      setState(() {
-        _permissionGranted = granted;
-        if (!granted) _listening = false;
-      });
+    if (_checkingPermission) return;
+    _checkingPermission = true;
+    try {
+      final granted = await NotificationService.isPermissionGranted();
+      if (mounted) {
+        setState(() {
+          _permissionGranted = granted;
+          if (!granted) _listening = false;
+        });
+      }
+    } finally {
+      _checkingPermission = false;
     }
   }
 
   Future<void> _recheckQuota() async {
+    final now = DateTime.now();
+    if (_lastQuotaCheck != null && now.difference(_lastQuotaCheck!).inSeconds < 5) return;
+    _lastQuotaCheck = now;
     final apiKey = await SettingsService.getGroqApiKey();
     if (!mounted) return;
     if (apiKey == null) return;
