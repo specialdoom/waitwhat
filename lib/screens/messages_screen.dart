@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../database/app_database.dart';
 import '../services/database_service.dart';
+import '../utils/date_formatter.dart';
 import '../widgets/create_todo_sheet.dart';
 
 class MessagesScreen extends StatelessWidget {
@@ -61,7 +62,7 @@ class _MessageItem extends StatelessWidget {
             ),
           ),
           Text(
-            formatMessageTime(message.timestamp),
+            DateFormatter.messageTime(message.timestamp),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
@@ -112,7 +113,7 @@ class _MessageDetailSheet extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Text(
-                    formatMessageTime(message.timestamp),
+                    DateFormatter.messageTime(message.timestamp),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -173,23 +174,3 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-String formatMessageTime(DateTime time) {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final messageDay = DateTime(time.year, time.month, time.day);
-  if (messageDay == today) {
-    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute ${time.hour < 12 ? 'AM' : 'PM'}';
-  }
-  final diff = today.difference(messageDay).inDays;
-  if (diff < 7) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days[time.weekday - 1];
-  }
-  const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
-  return '${months[time.month - 1]} ${time.day}';
-}

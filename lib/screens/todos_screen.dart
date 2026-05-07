@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../database/app_database.dart';
 import '../services/database_service.dart';
 import '../services/settings_service.dart';
+import '../utils/date_formatter.dart';
+import '../utils/todo_sorter.dart';
 import '../widgets/create_todo_sheet.dart';
 import 'sender_filter_screen.dart';
 import 'settings_screen.dart';
@@ -78,7 +80,7 @@ class TodosScreen extends StatelessWidget {
                 final todos = snapshot.data!;
                 if (todos.isEmpty) return const _EmptyState();
 
-                final sorted = _sortTodos(todos);
+                final sorted = TodoSorter.byDueDate(todos);
 
                 return ListView.builder(
                   itemCount: sorted.length + 1,
@@ -95,17 +97,6 @@ class TodosScreen extends StatelessWidget {
     );
   }
 
-  List<Todo> _sortTodos(List<Todo> todos) {
-    final pending = todos.where((t) => !t.isCompleted).toList();
-    final done = todos.where((t) => t.isCompleted).toList();
-    pending.sort((a, b) {
-      if (a.dueDate == null && b.dueDate == null) return 0;
-      if (a.dueDate == null) return 1;
-      if (b.dueDate == null) return -1;
-      return a.dueDate!.compareTo(b.dueDate!);
-    });
-    return [...pending, ...done];
-  }
 }
 
 class _TodoItem extends StatelessWidget {
@@ -155,7 +146,7 @@ class _TodoItem extends StatelessWidget {
           children: [
             if (todo.dueDate != null)
               Text(
-                _formatDate(todo.dueDate!),
+                DateFormatter.dueDate(todo.dueDate!),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: _dueDateColor(
                     context,
@@ -199,33 +190,6 @@ class _TodoItem extends StatelessWidget {
     return Theme.of(context).colorScheme.outline;
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final diff = DateTime(
-      date.year,
-      date.month,
-      date.day,
-    ).difference(today).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Tomorrow';
-    if (diff == -1) return 'Yesterday';
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}';
-  }
 }
 
 class _EmptyState extends StatelessWidget {
