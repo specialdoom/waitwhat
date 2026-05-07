@@ -20,6 +20,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _permissionGranted = false;
   bool _listening = false;
   bool _checkingQuota = false;
+  DateTime? _lastQuotaCheck;
   bool _autoCreateTodos = false;
   bool _apiKeyVisible = false;
   bool _dailyReminderEnabled = false;
@@ -125,6 +126,9 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _recheckQuota() async {
+    final now = DateTime.now();
+    if (_lastQuotaCheck != null && now.difference(_lastQuotaCheck!).inSeconds < 5) return;
+    _lastQuotaCheck = now;
     final apiKey = await SettingsService.getGroqApiKey();
     if (!mounted) return;
     if (apiKey == null) return;

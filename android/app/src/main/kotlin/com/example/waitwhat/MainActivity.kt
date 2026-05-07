@@ -88,6 +88,7 @@ class MainActivity : FlutterActivity() {
 
     private fun scheduleDailyAlarm(hour: Int, minute: Int) {
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        alarmManager.cancel(alarmPendingIntent())
         val triggerTime = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)

@@ -5,13 +5,21 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val title = intent.getStringExtra("title") ?: "Pending todos"
-        val body = intent.getStringExtra("body") ?: "You have todos waiting for your attention"
-        showNotification(context, DAILY_REMINDER_ID, title, body)
+        val wl = (context.getSystemService(Context.POWER_SERVICE) as PowerManager)
+            .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "waitwhat:dailyreminder")
+        wl.acquire(60_000L)
+        try {
+            val title = intent.getStringExtra("title") ?: "Pending todos"
+            val body = intent.getStringExtra("body") ?: "You have todos waiting for your attention"
+            showNotification(context, DAILY_REMINDER_ID, title, body)
+        } finally {
+            wl.release()
+        }
     }
 
     companion object {
