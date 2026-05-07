@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import '../services/github_service.dart';
 
@@ -23,6 +25,17 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     super.dispose();
   }
 
+  Future<String> _deviceInfo() async {
+    try {
+      final info = await DeviceInfoPlugin().androidInfo;
+      return '\n\n---\n**Device info**'
+          '\n- Android: ${info.version.release} (SDK ${info.version.sdkInt})'
+          '\n- Device: ${info.manufacturer} ${info.model}';
+    } catch (_) {
+      return '';
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() {
@@ -30,9 +43,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       _error = null;
     });
     try {
+      final deviceDetails = await _deviceInfo();
       await GithubService.createIssue(
         title: _titleController.text.trim(),
-        body: _bodyController.text.trim(),
+        body: '${_bodyController.text.trim()}$deviceDetails',
         category: _category,
       );
       if (mounted) {
@@ -42,7 +56,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) setState(() => _error = 'Failed to submit. Check your connection and try again.');
+      if (!mounted) return;
+      final String error;
+      if (e is SocketException) {
+        error = 'No internet connection.';
+      } else if (e.toString().contains('401') || e.toString().contains('403')) {
+        error = 'GitHub authentication failed. Check your token.';
+      } else {
+        error = 'Failed to submit. Try again later.';
+      }
+      setState(() => _error = error);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
