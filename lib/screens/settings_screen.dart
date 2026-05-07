@@ -21,6 +21,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _listening = false;
   bool _checkingQuota = false;
   DateTime? _lastQuotaCheck;
+  bool _checkingPermission = false;
   bool _autoCreateTodos = false;
   bool _apiKeyVisible = false;
   bool _dailyReminderEnabled = false;
@@ -124,12 +125,18 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _checkPermission() async {
-    final granted = await NotificationService.isPermissionGranted();
-    if (mounted) {
-      setState(() {
-        _permissionGranted = granted;
-        if (!granted) _listening = false;
-      });
+    if (_checkingPermission) return;
+    _checkingPermission = true;
+    try {
+      final granted = await NotificationService.isPermissionGranted();
+      if (mounted) {
+        setState(() {
+          _permissionGranted = granted;
+          if (!granted) _listening = false;
+        });
+      }
+    } finally {
+      _checkingPermission = false;
     }
   }
 
