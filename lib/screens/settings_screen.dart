@@ -52,8 +52,12 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _toggleAutoCreate(bool value) async {
-    await SettingsService.setAutoCreateTodos(value);
-    if (mounted) setState(() => _autoCreateTodos = value);
+    try {
+      await SettingsService.setAutoCreateTodos(value);
+      if (mounted) setState(() => _autoCreateTodos = value);
+    } catch (_) {
+      if (mounted) _showNotification('Failed to save setting', NotificationType.error);
+    }
   }
 
   Future<void> _loadDailyReminder() async {
@@ -68,16 +72,20 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _toggleDailyReminder(bool value) async {
-    await SettingsService.setDailyReminderEnabled(value);
-    if (value) {
-      await PushNotificationService.scheduleDailyReminder(
-        hour: _dailyReminderTime.hour,
-        minute: _dailyReminderTime.minute,
-      );
-    } else {
-      await PushNotificationService.cancelDailyReminder();
+    try {
+      await SettingsService.setDailyReminderEnabled(value);
+      if (value) {
+        await PushNotificationService.scheduleDailyReminder(
+          hour: _dailyReminderTime.hour,
+          minute: _dailyReminderTime.minute,
+        );
+      } else {
+        await PushNotificationService.cancelDailyReminder();
+      }
+      if (mounted) setState(() => _dailyReminderEnabled = value);
+    } catch (_) {
+      if (mounted) _showNotification('Failed to save setting', NotificationType.error);
     }
-    if (mounted) setState(() => _dailyReminderEnabled = value);
   }
 
   Future<void> _pickReminderTime() async {
