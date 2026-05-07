@@ -68,6 +68,9 @@ class _CreateTodoSheetState extends State<_CreateTodoSheet> {
 
   void _showNotification(String message, NotificationType type) {
     setState(() => _notification = NotificationData(message, type));
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _notification = null);
+    });
   }
 
   Future<void> _suggestWithAi() async {
