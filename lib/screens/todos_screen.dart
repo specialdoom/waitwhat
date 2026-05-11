@@ -72,15 +72,13 @@ class TodosScreen extends StatelessWidget {
           ),
           Expanded(
             child: StreamBuilder<List<Todo>>(
-              stream: DatabaseService.instance.watchTodos(),
+              stream: DatabaseService.instance.watchTodos().map(TodoSorter.byDueDate),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final todos = snapshot.data!;
-                if (todos.isEmpty) return const _EmptyState();
-
-                final sorted = TodoSorter.byDueDate(todos);
+                final sorted = snapshot.data!;
+                if (sorted.isEmpty) return const _EmptyState();
 
                 return ListView.builder(
                   itemCount: sorted.length + 1,

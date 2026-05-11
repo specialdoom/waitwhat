@@ -27,15 +27,15 @@ class NotificationReceiver : BroadcastReceiver() {
         private const val CHANNEL_ID = "waitwhat_todos"
         private const val CHANNEL_NAME = "Todos"
 
+        fun createChannel(context: Context) {
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(
+                NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
+            )
+        }
+
         fun showNotification(context: Context, id: Int, title: String, body: String) {
             val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT,
-            )
-            manager.createNotificationChannel(channel)
 
             val openIntent = android.content.Intent(context, MainActivity::class.java).apply {
                 action = "OPEN_TODOS"

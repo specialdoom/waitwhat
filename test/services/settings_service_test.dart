@@ -5,6 +5,7 @@ import 'package:waitwhat/services/settings_service.dart';
 void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
+    await SettingsService.initialize();
     SettingsService.quotaExhaustedNotifier.value = false;
   });
 
