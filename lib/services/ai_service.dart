@@ -17,6 +17,10 @@ class AiService {
   static const _endpoint = 'https://api.groq.com/openai/v1/chat/completions';
   static const _model = 'llama-3.1-8b-instant';
 
+  static const _maxCache = 100;
+  static final _cache = <String, AiSuggestion?>{};
+
+
   static String _prompt(String sender, String body) {
     final now = DateTime.now();
     final today =
@@ -72,6 +76,8 @@ $body
     required String apiKey,
     http.Client? client,
   }) async {
+    final key = '$sender\x00$body';
+    if (_cache.containsKey(key)) return _cache[key];
     final c = client ?? http.Client();
     try {
       final response = await c.post(
@@ -98,7 +104,7 @@ $body
           (json['choices'] as List).first['message']['content'] as String;
       final data = jsonDecode(content) as Map<String, dynamic>;
 
-      if (data['needsTodo'] == false) return null;
+      if (data['needsTodo'] == false) return _cache[key] = null;
 
       final dueDateStr = data['dueDate'];
       DateTime? dueDate;
@@ -114,7 +120,9 @@ $body
         _ => Priority.medium,
       };
 
-      return AiSuggestion(dueDate: dueDate, priority: priority);
+      final result = AiSuggestion(dueDate: dueDate, priority: priority);
+      if (_cache.length >= _maxCache) _cache.remove(_cache.keys.first);
+      return _cache[key] = result;
     } catch (e) {
       if (e is AiQuotaExceededException) rethrow;
       final msg = e.toString().toLowerCase();
