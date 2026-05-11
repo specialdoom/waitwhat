@@ -9,6 +9,7 @@ class AppInitService {
 
   static Future<void> initialize() async {
     DatabaseService.initialize();
+    await SettingsService.initialize();
     await SettingsService.loadQuotaState();
     await PushNotificationService.initialize();
     await PushNotificationService.requestPermission();
