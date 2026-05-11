@@ -93,8 +93,10 @@ class _AddSenderSheetState extends State<_AddSenderSheet>
 
   Future<void> _loadSenders() async {
     final db = DatabaseService.instance;
-    final existing = await db.getAllSenders();
-    final seenSenders = await db.getSeenSenderNames();
+    final existingFuture = db.getAllSenders();
+    final seenFuture = db.getSeenSenderNames();
+    final existing = await existingFuture;
+    final seenSenders = await seenFuture;
     if (!mounted) return;
     setState(() {
       _existingSenders = existing.map((s) => s.name).toSet();
