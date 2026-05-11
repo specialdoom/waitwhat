@@ -18,6 +18,8 @@ http.Response _groqResponse(Map<String, dynamic> payload, {int status = 200}) {
 }
 
 void main() {
+  setUp(() => AiService.clearCache());
+
   group('AiService.suggestTodo', () {
     test('returns AiSuggestion when needsTodo is true', () async {
       final client = MockClient((_) async => _groqResponse({
@@ -134,7 +136,7 @@ void main() {
 
         final result = await AiService.suggestTodo(
           sender: 'X',
-          body: 'test',
+          body: 'test_$priorityStr',
           apiKey: 'key',
           client: client,
         );

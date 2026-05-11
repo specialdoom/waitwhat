@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../database/app_database.dart';
 
@@ -19,6 +20,9 @@ class AiService {
 
   static const _maxCache = 100;
   static final _cache = <String, AiSuggestion?>{};
+
+  @visibleForTesting
+  static void clearCache() => _cache.clear();
 
 
   static String _prompt(String sender, String body) {
