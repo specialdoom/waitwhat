@@ -23,11 +23,13 @@ class NotificationService {
   static final _recentKeys = <String, DateTime>{};
 
   // All senders seen in WhatsApp notifications this session (pre-filter).
+  static const _maxSeenSenders = 500;
   static final seenSenders = <String>{};
 
   @visibleForTesting
   static void trackSender(String sender, String? body) {
     if (body == null || body.trim().isEmpty) return;
+    if (seenSenders.length >= _maxSeenSenders) seenSenders.remove(seenSenders.first);
     seenSenders.add(sender);
   }
 
