@@ -19,6 +19,7 @@ class NotificationService {
 
   // Tracks recently seen (sender, body) keys to deduplicate WhatsApp's
   // duplicate notification events for the same message.
+  static const _maxRecentKeys = 1000;
   static final _recentKeys = <String, DateTime>{};
 
   // All senders seen in WhatsApp notifications this session (pre-filter).
@@ -74,6 +75,7 @@ class NotificationService {
 
     final last = _recentKeys[key];
     if (last != null && now.difference(last).inSeconds < 2) return;
+    if (_recentKeys.length >= _maxRecentKeys) _recentKeys.remove(_recentKeys.keys.first);
     _recentKeys[key] = now;
     _recentKeys.removeWhere((_, t) => now.difference(t).inSeconds > 10);
 
